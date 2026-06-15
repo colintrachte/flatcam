@@ -2553,30 +2553,11 @@ class appIO(QtCore.QObject):
                         found_older_project = True
 
                 if found_older_project:
-                    if not run_from_arg or not cli or from_tcl is False:
-                        msgbox = FCMessageBox(parent=self.app.ui)
-                        title = _("Legacy Project")
-                        txt = _("The project was made with an older app version.\n"
-                                "It may not load correctly.\n\n"
-                                "Do you want to continue?")
-                        msgbox.setWindowTitle(title)  # taskbar still shows it
-                        msgbox.setWindowIcon(QtGui.QIcon(self.app.resource_location + '/app128.png'))
-                        msgbox.setText('<b>%s</b>' % title)
-                        msgbox.setInformativeText(txt)
-                        msgbox.setIcon(QtWidgets.QMessageBox.Icon.Question)
-
-                        bt_ok = msgbox.addButton(_('Ok'), QtWidgets.QMessageBox.ButtonRole.AcceptRole)
-                        bt_cancel = msgbox.addButton(_('Cancel'), QtWidgets.QMessageBox.ButtonRole.RejectRole)
-
-                        msgbox.setDefaultButton(bt_ok)
-                        msgbox.exec()
-                        response = msgbox.clickedButton()
-
-                        if response == bt_cancel:
-                            return
-                    else:
-                        self.app.log.error("Legacy Project. Loading not supported.")
-                        return
+                    self.app.log.warning(
+                        "appIO.open_project() --> Legacy project format detected; old keys will be migrated.")
+                    self.inform.emit('[WARNING_NOTCL] %s' % _(
+                        "Legacy project loaded (older format). "
+                        "Re-save the project to update it to the current format."))
 
                 self.app.restore_project.emit(d, prj_filename, run_from_arg, from_tcl, cli, plot)
 
@@ -2785,7 +2766,8 @@ class appIO(QtCore.QObject):
 
             if self.options["global_save_compressed"] is True:
                 try:
-                    project_as_json = json.dumps(d, default=to_dict, indent=2, sort_keys=True).encode('utf-8')
+                    project_as_json = json.dumps(d, default=to_dict, indent=2, sort_keys=True,
+                                                    ignore_nan=True).encode('utf-8')
                 except Exception as e:
                     self.log.error(
                         "Failed to serialize file before compression: %s because: %s" % (str(filename), str(e)))
@@ -2830,7 +2812,7 @@ class appIO(QtCore.QObject):
 
                 # Write
                 try:
-                    json.dump(d, f, default=to_dict, indent=2, sort_keys=True)
+                    json.dump(d, f, default=to_dict, indent=2, sort_keys=True, ignore_nan=True)
                 except Exception as e:
                     self.log.error(
                         "Failed to serialize file: %s because: %s" % (str(filename), str(e)))

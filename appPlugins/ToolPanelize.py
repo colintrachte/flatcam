@@ -377,10 +377,10 @@ class Panelize(AppTool):
             if (panel_lengthx > constrain_dx) or (panel_lengthy > constrain_dy):
                 self.constrain_flag = True
 
-                while panel_lengthx > constrain_dx:
+                while panel_lengthx > constrain_dx and columns > 1:
                     columns -= 1
                     panel_lengthx = ((xmax - xmin) * columns) + (spacing_columns * (columns - 1))
-                while panel_lengthy > constrain_dy:
+                while panel_lengthy > constrain_dy and rows > 1:
                     rows -= 1
                     panel_lengthy = ((ymax - ymin) * rows) + (spacing_rows * (rows - 1))
 

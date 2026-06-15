@@ -6,8 +6,9 @@
 # MIT Licence                                              #
 # ##########################################################
 
-from importlib.machinery import SourceFileLoader
+import importlib.util
 import os
+import types
 from abc import ABCMeta, abstractmethod
 
 # module-root dictionary of preprocessors
@@ -154,7 +155,9 @@ def load_preprocessors(app):
     for path_search in preprocessors_path_search:
         for file in glob.glob(path_search):
             try:
-                SourceFileLoader('FlatCAMPostProcessor', file).load_module()
+                spec = importlib.util.spec_from_file_location('FlatCAMPostProcessor', file)
+                mod = types.ModuleType('FlatCAMPostProcessor')
+                spec.loader.exec_module(mod)
             except Exception as e:
                 app.log.error(str(e))
     return preprocessors

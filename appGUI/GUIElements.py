@@ -3260,9 +3260,9 @@ class FCButton(QtWidgets.QPushButton):
 
 
 class FCLabel(QtWidgets.QLabel):
-    clicked = QtCore.Signal(bool)
-    right_clicked = QtCore.Signal(bool)
-    middle_clicked = QtCore.Signal(bool)
+    clicked = QtCore.pyqtSignal(bool)
+    right_clicked = QtCore.pyqtSignal(bool)
+    middle_clicked = QtCore.pyqtSignal(bool)
 
     def __init__(self, title=None, color=None, b_color=None, bold=None, size=None, parent=None):
         """
