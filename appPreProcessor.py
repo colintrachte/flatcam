@@ -25,7 +25,7 @@ class ABCPreProcRegister(ABCMeta):
         newclass = super(ABCPreProcRegister, cls).__new__(cls, clsname, bases, attrs)
         if object not in bases:
             if newclass.__name__ in preprocessors:
-                log.warning('Preprocessor %s has been overriden' % newclass.__name__)
+                log.warning('Preprocessor %s has been overridden' % newclass.__name__)
             preprocessors[newclass.__name__] = newclass()  # here is your register function
         return newclass
 

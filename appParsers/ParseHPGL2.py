@@ -443,4 +443,4 @@ def parse_number(strnumber):
     :rtype: float
     """
 
-    return float(strnumber) / 40.0  # in milimeters
+    return float(strnumber) / 40.0  # in millimeters

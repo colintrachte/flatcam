@@ -5,7 +5,7 @@ from shapely import Point
 
 class TclCommandAddSlot(TclCommandSignaled):
     """
-    Tcl shell command to add a rectange to the given Geometry object.
+    Tcl shell command to add a slot to the given Excellon object.
     """
 
     # array of all command aliases, to be able use  old names for backward compatibility (add_poly, add_polygon)

@@ -3,7 +3,7 @@ from tclCommands.TclCommand import *
 
 class TclCommandAddRectangle(TclCommandSignaled):
     """
-    Tcl shell command to add a rectange to the given Geometry object.
+    Tcl shell command to add a rectangle to the given Geometry object.
     """
 
     # array of all command aliases, to be able use  old names for backward compatibility (add_poly, add_polygon)

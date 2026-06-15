@@ -196,8 +196,8 @@ class TclCommandGeoCutout(TclCommandSignaled):
 
         px = 0.5 * (xmin + xmax) + margin
         py = 0.5 * (ymin + ymax) + margin
-        lenghtx = (xmax - xmin) + (margin * 2)
-        lenghty = (ymax - ymin) + (margin * 2)
+        lengthx = (xmax - xmin) + (margin * 2)
+        lengthy = (ymax - ymin) + (margin * 2)
 
         gapsize = gapsize / 2 + (dia / 2)
 
@@ -225,25 +225,25 @@ class TclCommandGeoCutout(TclCommandSignaled):
             if gaps_u == 8 or gaps_u == '2LR':
                 geo = substract_rectangle_geo(geo,
                                               xmin - gapsize,               # botleft_x
-                                              py - gapsize + lenghty / 4,   # botleft_y
+                                              py - gapsize + lengthy / 4,   # botleft_y
                                               xmax + gapsize,               # topright_x
-                                              py + gapsize + lenghty / 4)   # topright_y
+                                              py + gapsize + lengthy / 4)   # topright_y
                 geo = substract_rectangle_geo(geo,
                                               xmin - gapsize,
-                                              py - gapsize - lenghty / 4,
+                                              py - gapsize - lengthy / 4,
                                               xmax + gapsize,
-                                              py + gapsize - lenghty / 4)
+                                              py + gapsize - lengthy / 4)
 
             if gaps_u == 8 or gaps_u == '2TB':
                 geo = substract_rectangle_geo(geo,
-                                              px - gapsize + lenghtx / 4,
+                                              px - gapsize + lengthx / 4,
                                               ymin - gapsize,
-                                              px + gapsize + lenghtx / 4,
+                                              px + gapsize + lengthx / 4,
                                               ymax + gapsize)
                 geo = substract_rectangle_geo(geo,
-                                              px - gapsize - lenghtx / 4,
+                                              px - gapsize - lengthx / 4,
                                               ymin - gapsize,
-                                              px + gapsize - lenghtx / 4,
+                                              px + gapsize - lengthx / 4,
                                               ymax + gapsize)
 
             if gaps_u == 4 or gaps_u == 'LR':

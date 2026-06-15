@@ -6282,8 +6282,8 @@ class FCDate(QtWidgets.QDateEdit):
 
     def get_value(self):
         date = self.date()
-        date_formated = date.toString(QtCore.Qt.DateFormat.ISODate)
-        return date_formated
+        date_formatted = date.toString(QtCore.Qt.DateFormat.ISODate)
+        return date_formatted
 
 
 def message_dialog(title, message, kind="info", parent=None):

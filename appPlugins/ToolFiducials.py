@@ -399,7 +399,7 @@ class ToolFiducials(AppTool):
         :param g_obj:           the Gerber object where to add the geometry
         :param fid_size:        the overall size of the fiducial or fiducial opening depending on the g_obj type
         :param fid_type:        the type of fiducial: circular, cross, chess
-        :param line_size:       the line thickenss when the fiducial type is cross
+        :param line_size:       the line thickness when the fiducial type is cross
         :return:
         """
         fid_size = self.ui.fid_size_entry.get_value() if fid_size is None else fid_size

@@ -50,7 +50,7 @@ class TclCommandAlignDrillGrid(TclCommandSignaled):
             ('gridoffsetx', 'Move grid  from origin.'),
             ('gridy', 'Grid size in Y axis.'),
             ('gridoffsety', 'Move grid  from origin.'),
-            ('colums', 'Number of grid holes on X axis.'),
+            ('columns', 'Number of grid holes on X axis.'),
             ('rows', 'Number of grid holes on Y axis.'),
             ('outname', 'Name of the object to create.')
         ]),

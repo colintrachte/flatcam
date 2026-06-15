@@ -1259,7 +1259,7 @@ class Gerber(Geometry):
                                                             "Line number"), str(line_num)))
                             else:
                                 if last_path_aperture is None:
-                                    self.app.log.warning("No aperture defined for curent path. (%d)" % line_num)
+                                    self.app.log.warning("No aperture defined for current path. (%d)" % line_num)
                                 # TODO: this may (should) fail
                                 width = self.tools[last_path_aperture]["size"]
                                 geo_s = LineString(path).buffer(width / 1.999, int(self.steps_per_circle))
@@ -1487,7 +1487,7 @@ class Gerber(Geometry):
                             geo_dict = {}
 
                             if last_path_aperture is None:
-                                self.app.log.warning("No aperture defined for curent path. (%d)" % line_num)
+                                self.app.log.warning("No aperture defined for current path. (%d)" % line_num)
 
                             # --- BUFFERED ---
                             width = self.tools[last_path_aperture]["size"]
@@ -1891,7 +1891,7 @@ class Gerber(Geometry):
         :param margin: Distance to enlarge the rectangular bounding
          box in both positive and negative, x and y axes.
         :type margin: float
-        :param rounded: Wether or not to have rounded corners.
+        :param rounded: Whether or not to have rounded corners.
         :type rounded: bool
         :return: The bounding box.
         :rtype: Shapely.Polygon

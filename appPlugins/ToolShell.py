@@ -533,10 +533,10 @@ class FCShell(TermWidget):
 
             if show_trace > 0:
                 trc = traceback.format_list(traceback.extract_tb(exc_traceback))
-                trc_formated = []
+                trc_formatted = []
                 for a in reversed(trc):
-                    trc_formated.append(a.replace("    ", " > ").replace("\n", ""))
-                text = "%s\nPython traceback: %s\n%s" % (exc_value, exc_type, "\n".join(trc_formated))
+                    trc_formatted.append(a.replace("    ", " > ").replace("\n", ""))
+                text = "%s\nPython traceback: %s\n%s" % (exc_value, exc_type, "\n".join(trc_formatted))
             else:
                 text = "%s" % error
         else:

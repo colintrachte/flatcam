@@ -5329,7 +5329,7 @@ class ShortcutsTab(QtWidgets.QWidget):
             _('A'), _("Draw an Arc"),
             _('B'), _("Buffer Tool"),
             _('C'), _("Copy Geo Item"),
-            _('D'), _("Within Add Arc will toogle the ARC direction: CW or CCW"),
+            _('D'), _("Within Add Arc will toggle the ARC direction: CW or CCW"),
             _('E'), _("Polygon Intersection Tool"),
             _('I'), _("Geo Paint Tool"),
             _('J'), _("Jump to Location (x, y)"),

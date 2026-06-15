@@ -13,7 +13,7 @@ https://stackoverflow.com/questions/22020091/how-to-handle-drag-and-drop-properl
 
 Here is a code I ended up after two days of TreeView/Model madness. The subject appeared to be much more broad 
 than I thought. 
-I barely can spend so much time creating a singe widget. 
+I barely can spend so much time creating a single widget.
 Anyway. 
 The drag-and-drop functionality of TreeView items has been enabled. 
 But other than few interesting printout there is not much there. 

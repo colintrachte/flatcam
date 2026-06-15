@@ -145,8 +145,8 @@ class TclCommandPanelize(TclCommand):
             spacing_rows = 5
 
         xmin, ymin, xmax, ymax = box.bounds()
-        lenghtx = xmax - xmin + spacing_columns
-        lenghty = ymax - ymin + spacing_rows
+        lengthx = xmax - xmin + spacing_columns
+        lengthy = ymax - ymin + spacing_rows
 
         # def panelize():
         #     currenty = 0
@@ -187,8 +187,8 @@ class TclCommandPanelize(TclCommand):
         #                     self.app.app_obj.new_object("geometry", local_outname, initialize_local, plot=False,
         #                                         autoselected=False)
         #
-        #                 currentx += lenghtx
-        #             currenty += lenghty
+        #                 currentx += lengthx
+        #             currenty += lengthy
         #
         #         if isinstance(obj, ExcellonObject):
         #             self.app.app_obj.new_object("excellon", outname, initialize_excellon)
@@ -283,8 +283,8 @@ class TclCommandPanelize(TclCommand):
                                 else:
                                     obj.tools[tool]['slots'] = []
 
-                            currentx += lenghtx
-                        currenty += lenghty
+                            currentx += lengthx
+                        currenty += lengthy
 
                     obj_fin.create_geometry()
                     obj_fin.zeros = obj.zeros
@@ -349,8 +349,8 @@ class TclCommandPanelize(TclCommand):
                                     translate_recursion(obj.solid_geometry)
                                 )
 
-                            currentx += lenghtx
-                        currenty += lenghty
+                            currentx += lengthx
+                        currenty += lengthy
                     obj_fin.source_file = app_obj.f_handlers.export_dxf(obj_name=outname, filename=None,
                                                                         local_use=obj_fin, use_thread=False)
 
@@ -409,8 +409,8 @@ class TclCommandPanelize(TclCommand):
                                 trans_geo = translate_recursion(obj.solid_geometry)
                                 obj_fin.solid_geometry.append(trans_geo)
 
-                            currentx += lenghtx
-                        currenty += lenghty
+                            currentx += lengthx
+                        currenty += lengthy
 
                     obj_fin.source_file = app_obj.f_handlers.export_gerber(obj_name=outname, filename=None,
                                                                            local_use=obj_fin, use_thread=False)

@@ -365,8 +365,8 @@ class Panelize(AppTool):
             return
 
         xmin, ymin, xmax, ymax = box_obj.bounds()
-        lenghtx = xmax - xmin + spacing_columns
-        lenghty = ymax - ymin + spacing_rows
+        lengthx = xmax - xmin + spacing_columns
+        lengthy = ymax - ymin + spacing_rows
 
         # check if constrain within an area is desired
         if self.ui.constrain_cb.isChecked():
@@ -493,8 +493,8 @@ class Panelize(AppTool):
                                 else:
                                     panel_source_obj.tools[tool]['slots'] = []
 
-                            currentx += lenghtx
-                        currenty += lenghty
+                            currentx += lengthx
+                        currenty += lengthy
 
                     obj_fin.create_geometry()
                     obj_fin.zeros = panel_source_obj.zeros
@@ -728,8 +728,8 @@ class Panelize(AppTool):
                                     trans_geo = translate_recursion(panel_source_obj.solid_geometry)
                                     new_obj.solid_geometry.append(trans_geo)
 
-                            currentx += lenghtx
-                        currenty += lenghty
+                            currentx += lengthx
+                        currenty += lengthy
 
                     # #################################################################################################
                     # ###########################   Path Optimization   ###############################################
@@ -1029,8 +1029,8 @@ class Panelize(AppTool):
                                     trans_geo = translate_recursion(panel_source_obj.solid_geometry)
                                     new_obj.solid_geometry.append(trans_geo)
 
-                            currentx += lenghtx
-                        currenty += lenghty
+                            currentx += lengthx
+                        currenty += lengthy
 
                     if panel_source_obj.kind == 'geometry':
                         new_obj.multitool = False
