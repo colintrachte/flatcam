@@ -1063,7 +1063,13 @@ class PoligonizeEditorGrb(ShapeToolEditorGrb):
         for geo_shape in self.draw_app.selected:
             geometric_data = geo_shape.geo
             if 'solid' in geometric_data:
-                exterior_geo.append(Polygon(geometric_data['solid'].exterior))
+                solid = geometric_data['solid']
+                if hasattr(solid, 'exterior'):
+                    exterior_geo.append(Polygon(solid.exterior))
+                elif isinstance(solid, (LineString, LinearRing)):
+                    hull = solid.convex_hull
+                    if hasattr(hull, 'exterior'):
+                        exterior_geo.append(hull)
 
         fused_geo = MultiPolygon(exterior_geo)
         fused_geo = fused_geo.buffer(0.0000001)
@@ -1085,6 +1091,10 @@ class PoligonizeEditorGrb(ShapeToolEditorGrb):
         else:
             # clean-up the geo
             fused_geo = fused_geo.buffer(0)
+
+            if not hasattr(fused_geo, 'exterior'):
+                self.draw_app.app.inform.emit('[ERROR_NOTCL] %s' % _("Polygonize produced invalid geometry."))
+                return
 
             if len(fused_geo.interiors) == 0 and len(exterior_geo) == 1:
                 try:
@@ -4078,7 +4088,7 @@ class AppGerberEditor(QtCore.QObject):
 
         self.ui.scale_button.clicked.connect(self.on_scale)
 
-        self.app.ui.aperture_delete_btn.triggered.connect(self.on_delete_btn)
+        self.app.ui.aperture_delete_btn.triggered.connect(lambda: self.on_aperture_delete())
         self.ui.name_entry.returnPressed.connect(self.on_name_activate)
 
         self.ui.aptype_cb.currentIndexChanged.connect(self.on_aptype_changed)

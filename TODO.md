@@ -1,53 +1,43 @@
 # FlatCAM Evo Beta — TODO
 > Fork: colintrachte/flatcam (branch `mstanciu_Beta_8.995`)
-> Last reviewed: 2026-06-17
+> Last reviewed: 2026-06-19
 
 ---
 
 ## Critical Crashes
 
-- [ ] **Issue #619** — App crashes when milling drill slots
-  - PR #351 partially addresses this (better slot-to-drill distribution). Investigate `ToolDrilling.process_slot_as_drills()` edge cases independently.
+- [x] **Issue #619** — App crashes when milling drill slots — *Fixed 2026-06-19: zero-length slot guard in `ToolDrilling.process_slot_as_drills()`*
 
-- [ ] **Issue #500** — Corner markers crash on toggle in Gerber folder
-  - Enabling/disabling corner markers causes AttributeError. Check `ToolFiducials`.
+- [x] **Issue #500** — Corner markers crash on toggle in Gerber folder — *Fixed 2026-06-19: disconnect signals before `clear_ui` in `ToolFiducials.set_tool_ui()`*
 
-- [ ] **Issue #529** — Gerber editor: Delete aperture button does nothing; Polygonize crashes the editor
-  - Two separate bugs in the Gerber editor, both block editing workflows.
+- [x] **Issue #529** — Gerber editor: Delete aperture button does nothing; Polygonize crashes the editor — *Fixed 2026-06-19: correct delete handler (#529a); guard non-Polygon solid in polygonize (#529b)*
 
 ---
 
 ## Major PCB Workflow Bugs
 
 - [ ] **Issue #539** — Isolation tool path offset inconsistency
-  - Critical for PCB accuracy: the offset applied during isolation routing is not consistent across all pass counts. Check `ToolIsolation`.
+  - `ToolIsolation` uses `2.0000001` divisor in iso_offset formula while the rest-machining path uses `2.0`. Change all four occurrences to `2.0`. Deliberately deferred — subtle, affects cut quality, needs live testing.
 
-- [ ] **Issue #687** — KiCad v7 octagonal pads render distorted
-  - Octagonal apertures from KiCad v7 Gerber export are not drawn correctly.
+- [x] **Issue #687** — KiCad v7 octagonal pads render distorted — *Fixed 2026-06-19: `camlib.py` `ApertureMacro.default2zero(4, mods)` → `default2zero(6, mods)`*
 
-- [ ] **Issue #688** — Valid RS-274-X Gerber files rejected as "probably not a Gerber file"
-  - Legal Gerber files that other tools load fine fail here. Gerber parser is over-strict.
+- [x] **Issue #688** — Valid RS-274-X Gerber files rejected as "probably not a Gerber file" — *Fixed 2026-06-19: relaxed rejection condition to only fail when `buff_length == 0 AND area == 0`*
 
-- [ ] **Issue #605 / #505** — NCC "no NCC Geometry" errors and strange geometry in some configurations
-  - Two related reports. NCC fails silently or produces incorrect fill geometry with certain tool diameters and overlap settings.
+- [x] **Issue #605 / #505** — NCC "no NCC Geometry" errors — *Fixed 2026-06-19: guard `isinstance(solid_geometry, list)` before `.buffer(0)` in `ToolNCC.py`*
 
 - [ ] **Issue #591** — Cutout multi-depth produces wrong output
-  - Multi-pass cutout (`z_depthpercut`) generates incorrect G-code depth sequence.
+  - Investigated: the `while depth > z_cut:` loop logic is correct — exits when depth equals z_cut. May be a user config issue; needs a reproduction case to confirm whether a real bug exists.
 
-- [ ] **Issue #604** — Tool moves XY before lifting to safe Z mid-job
-  - Rapid moves between cuts drag the tool through material. The end-move is correct; this is intermediate rapids. Check gcode generation in `camlib.py`.
+- [x] **Issue #604** — Tool moves XY before lifting to safe Z mid-job — *Fixed 2026-06-19: swapped order in `camlib.py` exclusion-zone traversal: lift Z at current position, then rapid XY*
 
 - [ ] **Issue #682** — Cannot modify aperture size when DIM parameters exist
-  - Aperture editing in the Gerber editor is blocked when the aperture has DIM parameters.
+  - Aperture editing in the Gerber editor is blocked when the aperture has DIM parameters. `on_aptype_changed` not called with current index on init.
 
-- [ ] **Issue #526** — Milling target combo box defaults to first file, not selected object
-  - When you open Milling, the source object should pre-select whatever is active in the project list.
+- [x] **Issue #526** — Milling target combo box defaults to first file, not selected object — *Fixed 2026-06-19: `blockSignals` around `target_radio.set_value` in `ToolMilling.set_tool_ui()`*
 
-- [ ] **Issue #528** — Extract Plugin source object selector jumps to wrong object
-  - Source selector in the Extract plugin does not track the currently selected object.
+- [x] **Issue #528** — Extract Plugin source object selector jumps to wrong object — *Fixed 2026-06-19: `if obj and obj.kind == 'gerber':` guard in `ToolExtract.set_tool_ui()`*
 
-- [ ] **Issue #561** — `TclCommandMillDrills` doesn't parse tool list string correctly
-  - TCL batch users cannot specify multiple tools; the string parser splits wrong.
+- [x] **Issue #561** — `TclCommandMillDrills` doesn't parse tool list string correctly — *Fixed 2026-06-19: use `found_dias` set instead of decrement counter; fixed docstring example*
 
 ---
 
@@ -68,9 +58,9 @@
 - [ ] **PR #127** — Open multiple Gerber/Excellon/G-code files at once in file dialog
   - QoL: currently must open files one at a time. Author: Travers Carter.
 
-- [ ] **PR #355 (partial)** — Two items relevant to this fork:
-  - Add explicit `int()` cast around `IndexToNode()` in `camlib.py:3008-3009` (NumPy 2.x integer type compatibility)
-  - Modernize `tclCommands/__init__.py` with `importlib.util` (same fix already applied to `appPreProcessor.py`)
+- [x] **PR #355 (partial)** — Two items relevant to this fork:
+  - `int()` cast around `IndexToNode()` in `camlib.py` — *Fixed 2026-06-19*
+  - `tclCommands/__init__.py` importlib modernization — *already done in prior session*
 
 ---
 
@@ -79,8 +69,7 @@
 - [ ] **Issue #609** — SVG export only exports outermost isolation pass; inner passes missing
   - If you run 2-pass isolation and export SVG, only pass 1 appears. Check `export_svg` in `GeometryObject`.
 
-- [ ] **Issue #549** — No default preprocessor setting for Excellon jobs in Preferences
-  - Excellon jobs default to the geometry preprocessor; should have its own preference entry.
+- [x] **Issue #549** — No default preprocessor setting for Excellon jobs in Preferences — *Fixed 2026-06-19: `set_value` after `addItems` in `ToolsDrillPrefGroupUI.py`*
 
 - [ ] **Issue #530** — Excellon editor: diameter change takes effect one click late
   - Off-by-one in the signal/slot wiring for the diameter spinbox.
@@ -89,13 +78,11 @@
   - EasyEDA exports a non-standard DRL header. Add detection to the Excellon parser.
 
 - [ ] **Issue #413** — `drillcncjob` TCL command: toolchange Z height hardcoded at 0.1
-  - Should respect the preference value; currently ignores it.
+  - Investigated: no hardcoded 0.1 found for toolchange Z. The `toolchangez` value reads from args or `options["tools_drill_toolchangez"]`. Likely already fixed or never a code bug.
 
-- [ ] **Issue #405** — Units displayed in wrong case ("5.4MM" instead of "5.4 mm")
-  - Cosmetic but appears in generated G-code comments.
+- [x] **Issue #405** — Units displayed in wrong case ("5.4MM" instead of "5.4 mm") — *Already fixed: all preprocessors call `.lower()` on the units string*
 
-- [ ] **Issue #684** — No conda `environment.yml`
-  - conda-forge has working GDAL wheels; an `environment.yml` is the easiest install path for new users who want image import.
+- [x] **Issue #684** — No conda `environment.yml` — *Fixed 2026-06-19: `environment.yml` created with conda-forge packages including GDAL*
 
 ---
 
@@ -123,6 +110,20 @@ These may already be fixed — confirm before spending time on them:
 
 | When | What |
 |---|---|
+| 2026-06-19 | #619: zero-length slot crash in `ToolDrilling.process_slot_as_drills()` |
+| 2026-06-19 | #500: ToolFiducials signals-before-clear_ui crash |
+| 2026-06-19 | #529: Gerber editor delete handler + polygonize non-Polygon crash |
+| 2026-06-19 | #687: `ApertureMacro.default2zero(4)` → `default2zero(6)` (octagonal pads) |
+| 2026-06-19 | #688: Gerber parser over-rejection of region-only files |
+| 2026-06-19 | #605/#505: NCC `list.buffer(0)` AttributeError |
+| 2026-06-19 | #604: XY rapid before Z-lift in exclusion zone traversal |
+| 2026-06-19 | #526: ToolMilling target combo wipe-on-open |
+| 2026-06-19 | #528: ToolExtract selector ignores non-Gerber active objects |
+| 2026-06-19 | #561: TclCommandMillDrills docstring + counter logic |
+| 2026-06-19 | #549: Excellon preprocessor preference set_value |
+| 2026-06-19 | PR #355: `int()` cast around `IndexToNode()` for NumPy 2.x |
+| 2026-06-19 | #684: `environment.yml` created for conda users |
+| 2026-06-19 | #405: confirmed already fixed (`.lower()` on units in all preprocessors) |
 | 2026-06-17 | Misspellings fixed across 14 files (`toogle`, `curent`, `overriden`, `rectange`, `lenghtx`/`lenghty`, etc.) |
 | 2026-06-17 | Default G-code save extension changed from `.nc` to `.gcode` |
 | 2026-06-17 | Legacy project blocking dialog removed; replaced with non-blocking status-bar warning |

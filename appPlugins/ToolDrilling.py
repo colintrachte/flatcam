@@ -1853,22 +1853,31 @@ class ToolDrilling(AppTool, Excellon):
     @staticmethod
     def process_slot_as_drills(slot, overlap, add_last_pt=False):
 
-        drills_list = []
         start_pt = slot[0]
         stop_pt = slot[1]
+
+        # guard against zero-length (degenerate) slots
+        if start_pt.distance(stop_pt) < 1e-9:
+            return [start_pt]
+
         slot_line = LineString([start_pt, stop_pt])
-        drills_list.append(start_pt)
+        drills_list = [start_pt]
+
+        if overlap <= 0:
+            if add_last_pt:
+                drills_list.append(stop_pt)
+            return drills_list
 
         ii = 0
         while True:
             ii += 1
             target = overlap * ii
-            new_pt = slot_line.interpolate(target)
-            if new_pt.within(slot_line) is False:
+            if target >= slot_line.length:
                 break
+            new_pt = slot_line.interpolate(target)
             drills_list.append(new_pt)
 
-        if add_last_pt and stop_pt.distance(drills_list[-1]) >= overlap/10:
+        if add_last_pt and stop_pt.distance(drills_list[-1]) >= overlap / 10:
             drills_list.append(stop_pt)
         return drills_list
 

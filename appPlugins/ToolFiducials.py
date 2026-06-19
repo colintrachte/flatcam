@@ -166,6 +166,15 @@ class ToolFiducials(AppTool):
     def set_tool_ui(self):
         self.units = self.app.app_units
 
+        # Disconnect signals from old UI before destroying it to prevent callbacks
+        # firing on partially-deleted widgets during clear_ui()
+        try:
+            self.ui.fid_type_combo.currentIndexChanged.disconnect(self.on_fiducial_type)
+            self.ui.level.toggled.disconnect(self.on_level_changed)
+            self.ui.reset_button.clicked.disconnect(self.set_tool_ui)
+        except (TypeError, AttributeError, RuntimeError):
+            pass
+
         self.clear_ui(self.layout)
         self.ui = FidoUI(layout=self.layout, app=self.app)
         self.pluginName = self.ui.pluginName

@@ -1,0 +1,49 @@
+# FlatCAM Evo Beta — Conda environment
+#
+# Usage:
+#   conda env create -f environment.yml
+#   conda activate flatcam
+#   python FlatCAM.py
+#
+# Notes:
+#   - GDAL and rasterio are included here via conda-forge (no C-header hassle on Windows).
+#     Remove them if you don't need the Image Import plugin.
+#   - ortools is only available on conda-forge for some platforms; fall back to pip if missing.
+#   - pyqtdarktheme must NOT be installed — the project ships a bundled copy in libs/qdarktheme/.
+
+name: flatcam
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.12
+  - numpy>=1.16
+  - shapely>=2.0
+  - rtree
+  - pyqt>=6.4.0
+  - pyopengl
+  - vispy>=0.9.0,<0.17
+  - freetype-py
+  - matplotlib>=3.5.0
+  - cycler>=0.10
+  - kiwisolver>=1.1
+  - python-dateutil>=2.1
+  - lxml
+  - fonttools
+  - ezdxf
+  - reportlab>=3.5
+  - simplejson
+  - dill
+  - qrcode>=6.1
+  - pyserial>=3.4
+  - darkdetect
+  # Optional image-import plugin (comment out if not needed)
+  - gdal
+  - rasterio
+  - pip
+  - pip:
+      - svg.path>=4.0
+      - svglib
+      - pikepdf>=2.0
+      - ortools>=9.0

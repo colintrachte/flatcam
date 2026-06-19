@@ -16,7 +16,7 @@ class TclCommandMillDrills(TclCommandSignaled):
     Tcl shell command to Create Geometry Object for milling holes from Excellon.
 
     example:
-        millholes my_drill -tools 1,2,3 -tooldia 0.1 -outname mill_holes_geo
+        milldrills my_drill -milled_dias 1.0,2.0 -tooldia 0.1 -outname mill_holes_geo
     """
 
     # List of all command aliases, to be able use old names for backward compatibility (add_poly, add_polygon)
@@ -99,30 +99,28 @@ class TclCommandMillDrills(TclCommandSignaled):
         try:
             if 'milled_dias' in args and args['milled_dias'] != 'all':
                 diameters = [x.strip() for x in args['milled_dias'].split(",") if x != '']
-                nr_diameters = len(diameters)
 
                 req_tools = set()
+                found_dias = set()
                 for tool in obj.tools:
+                    obj_dia_form = float('%.*f' % (obj.decimals, float(obj.tools[tool]["tooldia"])))
                     for req_dia in diameters:
-                        obj_dia_form = float('%.*f' % (obj.decimals, float(obj.tools[tool]["tooldia"])))
                         req_dia_form = float('%.*f' % (obj.decimals, float(req_dia)))
 
                         if 'diatol' in args:
                             tolerance = float(args['diatol']) / 100
-
-                            tolerance = 0.0 if tolerance < 0.0 else tolerance
-                            tolerance = 1.0 if tolerance > 1.0 else tolerance
+                            tolerance = max(0.0, min(1.0, tolerance))
                             if math.isclose(obj_dia_form, req_dia_form, rel_tol=tolerance):
                                 req_tools.add(tool)
-                                nr_diameters -= 1
+                                found_dias.add(req_dia)
                         else:
                             if obj_dia_form == req_dia_form:
                                 req_tools.add(tool)
-                                nr_diameters -= 1
+                                found_dias.add(req_dia)
 
-                if nr_diameters > 0:
-                    self.raise_tcl_error("One or more tool diameters of the drills to be milled passed to the "
-                                         "TclCommand are not actual tool diameters in the Excellon object.")
+                missing = [d for d in diameters if d not in found_dias]
+                if missing:
+                    self.raise_tcl_error("Tool diameters not found in Excellon object: %s" % ', '.join(missing))
 
                 args['tools'] = req_tools
 

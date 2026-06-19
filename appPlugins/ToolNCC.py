@@ -3087,7 +3087,11 @@ class NonCopperClear(AppTool, Gerber):
                 # unfortunately for this function to work time efficient,
                 # if the Gerber was loaded without buffering then it require the buffering now.
                 if self.app.options['gerber_buffering'] == 'no':
-                    sol_geo = ncc_obj.solid_geometry.buffer(0)
+                    raw_geo = ncc_obj.solid_geometry
+                    if isinstance(raw_geo, list):
+                        sol_geo = unary_union(raw_geo).buffer(0)
+                    else:
+                        sol_geo = raw_geo.buffer(0)
                 else:
                     sol_geo = ncc_obj.solid_geometry
                     if isinstance(sol_geo, list):

@@ -211,6 +211,8 @@ class ToolsDrillPrefGroupUI(OptionsGroupUI):
         self.pp_excellon_name_cb.setSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding,
                                                QtWidgets.QSizePolicy.Policy.Preferred)
         self.pp_excellon_name_cb.addItems(self.options["tools_drill_preprocessor_list"])
+        if "tools_drill_ppname_e" in self.options:
+            self.pp_excellon_name_cb.set_value(self.options["tools_drill_ppname_e"])
 
         for it in range(self.pp_excellon_name_cb.count()):
             self.pp_excellon_name_cb.setItemData(it, self.pp_excellon_name_cb.itemText(it),

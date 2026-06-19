@@ -221,16 +221,13 @@ class ToolExtract(AppTool):
 
         # SELECT THE CURRENT OBJECT
         obj = self.app.collection.get_active()
-        if obj:
-            if obj.kind == 'gerber':
-                obj_name = obj.obj_options['name']
-                self.ui.gerber_object_combo.set_value(obj_name)
+        if obj and obj.kind == 'gerber':
+            self.ui.gerber_object_combo.set_value(obj.obj_options['name'])
         else:
-            # take first available Gerber file, if any
+            # active object is not a Gerber — fall back to first available Gerber
             available_gerber_list = [o for o in self.app.collection.get_list() if o.kind == 'gerber']
             if available_gerber_list:
-                obj_name = available_gerber_list[0].obj_options['name']
-                self.ui.gerber_object_combo.set_value(obj_name)
+                self.ui.gerber_object_combo.set_value(available_gerber_list[0].obj_options['name'])
 
         self.app.ui.notebook.setTabText(2, _("Extract"))
 

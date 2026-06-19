@@ -1695,7 +1695,9 @@ class Gerber(Geometry):
                 sol_geo_length = 1
 
             try:
-                if buff_length == 0 and sol_geo_length in [0, 1] and self.solid_geometry.area == 0:
+                # Only fail if both poly_buffer AND solid_geometry (region fills) are empty.
+                # Checking buff_length alone rejects valid Gerbers that use only G36/G37 region fills.
+                if buff_length == 0 and self.solid_geometry.area == 0:
                     self.app.log.error("Object is not Gerber file or empty. Aborting Object creation.")
                     return 'fail'
             except TypeError as e:

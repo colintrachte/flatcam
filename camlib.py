@@ -286,7 +286,7 @@ class ApertureMacro:
         """
 
         # pol, width, height, x, y, angle = ApertureMacro.default2zero(4, mods)
-        val = ApertureMacro.default2zero(4, mods)
+        val = ApertureMacro.default2zero(6, mods)
         pol = val[0]
         width = val[1]
         height = val[2]
@@ -3005,8 +3005,8 @@ class CNCjob(Geometry):
 
         def distance_callback(self, from_index, to_index):
             # Convert from routing variable Index to distance matrix NodeIndex.
-            from_node = self.manager.IndexToNode(from_index)
-            to_node = self.manager.IndexToNode(to_index)
+            from_node = int(self.manager.IndexToNode(from_index))
+            to_node = int(self.manager.IndexToNode(to_index))
             return self.matrix[from_node][to_node]
 
     @staticmethod
@@ -3571,12 +3571,12 @@ class CNCjob(Geometry):
                     locy = travel[1][1]
 
                     if travel[0] is not None:
-                        # move to next point
-                        t_gcode += self.doformat(p.rapid_code, x=locx, y=locy)
-
-                        # raise to safe Z (travel[0]) each time because safe Z may be different
+                        # lift to exclusion-zone safe Z at current position before moving XY
                         self.z_move = travel[0]
-                        t_gcode += self.doformat(p.lift_code, x=locx, y=locy)
+                        t_gcode += self.doformat(p.lift_code, x=temp_locx, y=temp_locy)
+
+                        # now rapid XY to next waypoint at safe height
+                        t_gcode += self.doformat(p.rapid_code, x=locx, y=locy)
 
                         # restore z_move
                         self.z_move = tool_dict['tools_drill_travelz']

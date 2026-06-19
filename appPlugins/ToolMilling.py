@@ -465,19 +465,31 @@ class ToolMilling(AppTool, Excellon):
         # try to select in the Target combobox the active object
         selected_obj = self.app.collection.get_active()
         try:
-
             if not selected_obj:
+                # block signals so on_target_changed doesn't wipe the combo before we set it
+                self.ui.target_radio.blockSignals(True)
                 self.ui.target_radio.set_value('geo')
+                self.ui.target_radio.blockSignals(False)
+                self.on_target_changed('geo')
                 self.ui.object_combo.setCurrentIndex(0)
             else:
                 if selected_obj.kind == 'excellon':
+                    self.ui.target_radio.blockSignals(True)
                     self.ui.target_radio.set_value('exc')
+                    self.ui.target_radio.blockSignals(False)
+                    self.on_target_changed('exc')
                     self.ui.object_combo.set_value(selected_obj.obj_options['name'])
                 elif selected_obj.kind == 'geometry':
+                    self.ui.target_radio.blockSignals(True)
                     self.ui.target_radio.set_value('geo')
+                    self.ui.target_radio.blockSignals(False)
+                    self.on_target_changed('geo')
                     self.ui.object_combo.set_value(selected_obj.obj_options['name'])
                 else:
+                    self.ui.target_radio.blockSignals(True)
                     self.ui.target_radio.set_value('geo')
+                    self.ui.target_radio.blockSignals(False)
+                    self.on_target_changed('geo')
                     self.ui.object_combo.setCurrentIndex(0)
 
         except Exception as err:
