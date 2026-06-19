@@ -4000,6 +4000,7 @@ class MillingUI:
         # self.level.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.level.setCheckable(True)
         self.title_box.addWidget(self.level)
+        self.level.hide()
 
         self.tools_frame = QtWidgets.QFrame()
         self.tools_frame.setContentsMargins(0, 0, 0, 0)

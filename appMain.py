@@ -611,6 +611,9 @@ class App(QtCore.QObject):
         for def_key, def_val in self.defaults.items():
             self.options[def_key] = deepcopy(def_val)
 
+        # Always force advanced mode regardless of any saved config
+        self.options["global_app_level"] = 'a'
+
         # self.preferencesUiManager.show_preferences_gui()
 
         # Set global_theme based on appearance
@@ -2011,6 +2014,10 @@ class App(QtCore.QObject):
         self.ui.menuprojectdelete.triggered.connect(self.on_delete)
         self.ui.menuprojectsave.triggered.connect(self.on_project_context_save)
         self.ui.menuprojectproperties.triggered.connect(self.obj_properties)
+
+        self.ui.menuproject_generate_iso.triggered.connect(lambda: self.isolation_tool.run(toggle=True))
+        self.ui.menuproject_generate_geo.triggered.connect(lambda: self.milling_tool.run(toggle=True))
+        self.ui.menuproject_generate_drill.triggered.connect(lambda: self.drilling_tool.run(toggle=True))
 
         # Project Context Menu -> Color Setting
         for act in self.ui.menuprojectcolor.actions():

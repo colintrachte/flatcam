@@ -754,6 +754,7 @@ class FollowUI:
         )
         self.level.setCheckable(True)
         self.title_box.addWidget(self.level)
+        self.level.hide()
 
         # #############################################################################################################
         # ################################ The object to be followed ##################################################

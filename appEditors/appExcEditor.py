@@ -5255,6 +5255,7 @@ class AppExcEditorUI:
         # self.level.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.level.setCheckable(True)
         self.title_box.addWidget(self.level)
+        self.level.hide()
 
         # Object name box
         self.name_box = QtWidgets.QHBoxLayout()

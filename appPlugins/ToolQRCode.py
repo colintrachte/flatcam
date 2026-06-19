@@ -758,6 +758,7 @@ class QRcodeUI:
         )
         self.level.setCheckable(True)
         self.title_box.addWidget(self.level)
+        self.level.hide()
 
         # ## Grid Layout
         i_grid_lay = GLay(v_spacing=5, h_spacing=3)

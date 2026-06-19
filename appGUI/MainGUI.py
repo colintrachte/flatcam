@@ -961,6 +961,15 @@ class MainGUI(QtWidgets.QMainWindow):
         self.menuprojectproperties = self.menuproject.addAction(
             QtGui.QIcon(self.app.resource_location + '/properties32.png'), _('Properties'))
 
+        self.menuproject.addSeparator()
+
+        self.menuproject_generate_iso = self.menuproject.addAction(
+            QtGui.QIcon(self.app.resource_location + '/iso_16.png'), _('Generate Isolation Geometry'))
+        self.menuproject_generate_geo = self.menuproject.addAction(
+            QtGui.QIcon(self.app.resource_location + '/geometry16.png'), _('Generate CNC Job (Milling)'))
+        self.menuproject_generate_drill = self.menuproject.addAction(
+            QtGui.QIcon(self.app.resource_location + '/drill16.png'), _('Generate CNC Job (Drilling)'))
+
         # ########################################################################
         # ####################### Central Widget -> Splitter # ##################
         # ########################################################################

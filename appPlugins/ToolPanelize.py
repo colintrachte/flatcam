@@ -1164,6 +1164,7 @@ class PanelizeUI:
         )
         self.level.setCheckable(True)
         self.title_box.addWidget(self.level)
+        self.level.hide()
 
         # #############################################################################################################
         # Source Object Frame

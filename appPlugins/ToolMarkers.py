@@ -1259,6 +1259,7 @@ class MarkersUI:
         )
         self.level.setCheckable(True)
         self.title_box.addWidget(self.level)
+        self.level.hide()
 
         self.title_box = QtWidgets.QHBoxLayout()
         self.layout.addLayout(self.title_box)

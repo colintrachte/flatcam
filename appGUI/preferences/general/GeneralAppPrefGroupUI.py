@@ -159,28 +159,6 @@ class GeneralAppPrefGroupUI(OptionsGroupUI):
         grid1.addWidget(self.verbose_combo, 10, 1)
 
         # #############################################################################################################
-        # Grid0 Frame
-        # #############################################################################################################
-        self.app_level_label = FCLabel('%s' % _("Application Level"), color='red', bold=True)
-        self.app_level_label.setToolTip(_("Choose the default level of usage for FlatCAM.\n"
-                                          "BASIC level -> reduced functionality, best for beginner's.\n"
-                                          "ADVANCED level -> full functionality.\n\n"
-                                          "The choice here will influence the parameters in\n"
-                                          "the Selected Tab for all kinds of FlatCAM objects."))
-        self.layout.addWidget(self.app_level_label)
-
-        grid2_frame = FCFrame()
-        self.layout.addWidget(grid2_frame)
-
-        grid2 = GLay(v_spacing=5, h_spacing=3)
-        grid2_frame.setLayout(grid2)
-
-        # Application Level for FlatCAM
-        self.app_level_radio = RadioSet([{'label': _('Beginner'), 'value': 'b'},
-                                         {'label': _('Advanced'), 'value': 'a'}], compact=True)
-        grid2.addWidget(self.app_level_radio, 2, 0, 1, 2)
-
-        # #############################################################################################################
         # Grid3 Frame
         # #############################################################################################################
         # Languages for FlatCAM

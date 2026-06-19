@@ -76,6 +76,7 @@ class ObjectUI(QtWidgets.QWidget):
         )
         self.level.setCheckable(True)
         self.title_box.addWidget(self.level)
+        self.level.hide()
 
         # ## Box box for custom widgets
         # This gets populated in offspring implementations.

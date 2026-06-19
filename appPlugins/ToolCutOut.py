@@ -2324,6 +2324,7 @@ class CutoutUI:
         # self.level.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.level.setCheckable(True)
         self.title_box.addWidget(self.level)
+        self.level.hide()
 
         self.object_label = FCLabel('%s' % _("Source Object"), color='darkorange', bold=True)
         self.object_label.setToolTip('%s.' % _("Object to be cutout"))

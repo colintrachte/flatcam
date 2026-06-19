@@ -419,6 +419,11 @@ class ObjectCollection(QtCore.QAbstractItemModel):
         self.app.ui.menuprojectsave.setEnabled(sel)
         self.app.ui.menuprojectproperties.setEnabled(sel)
 
+        # Workflow shortcut items — hidden by default, shown based on selection
+        self.app.ui.menuproject_generate_iso.setVisible(False)
+        self.app.ui.menuproject_generate_geo.setVisible(False)
+        self.app.ui.menuproject_generate_drill.setVisible(False)
+
         if sel:
             self.app.ui.menuprojectedit.setVisible(True)
             self.app.ui.menuprojectsave.setVisible(True)
@@ -426,6 +431,17 @@ class ObjectCollection(QtCore.QAbstractItemModel):
             self.app.ui.menuprojectcolor.setEnabled(False)
 
             obj_selection = self.get_selected()
+
+            has_gerber = any(o.kind == 'gerber' for o in obj_selection)
+            has_geometry = any(o.kind == 'geometry' for o in obj_selection)
+            has_excellon = any(o.kind == 'excellon' for o in obj_selection)
+
+            if has_gerber:
+                self.app.ui.menuproject_generate_iso.setVisible(True)
+            if has_geometry:
+                self.app.ui.menuproject_generate_geo.setVisible(True)
+            if has_excellon:
+                self.app.ui.menuproject_generate_drill.setVisible(True)
 
             for obj in obj_selection:
                 if obj.kind == 'gerber' or obj.kind == 'excellon':

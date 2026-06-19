@@ -6616,6 +6616,7 @@ class AppGerberEditorUI:
         # self.level.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.level.setCheckable(True)
         self.title_box.addWidget(self.level)
+        self.level.hide()
 
         # Object name
         self.name_box = QtWidgets.QHBoxLayout()

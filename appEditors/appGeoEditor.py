@@ -2338,6 +2338,7 @@ class AppGeoEditorUI:
         # self.level.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.level.setCheckable(True)
         self.title_box.addWidget(self.level)
+        self.level.hide()
 
         dia_grid = GLay(v_spacing=5, h_spacing=3)
         self.tools_box.addLayout(dia_grid)
