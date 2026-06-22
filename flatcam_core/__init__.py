@@ -20,6 +20,7 @@ Quick start (headless):
 """
 
 from .context import AppContext, Event, HeadlessAdapter
+from .compat import AppContextFacade, HEADLESS_DEFAULTS
 from .geometry import GeometryEngine, ShapelyGeometryEngine
 from .operations import REQUIRED_PARAMS, OperationKind, OperationRequest, OperationResult
 from .parsers import ParserRegistry
@@ -31,6 +32,9 @@ __all__ = [
     "AppContext",
     "Event",
     "HeadlessAdapter",
+    # compat (camlib bridge)
+    "AppContextFacade",
+    "HEADLESS_DEFAULTS",
     # geometry
     "GeometryEngine",
     "ShapelyGeometryEngine",

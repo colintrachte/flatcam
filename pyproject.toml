@@ -1,3 +1,7 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --tb=short"
+filterwarnings = [
+    # Swig C-extension builtins from rtree / OR-Tools — not our code
+    "ignore::DeprecationWarning:importlib",
+]

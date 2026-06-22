@@ -214,27 +214,42 @@ golden timings alongside the golden G-code files (plan 1F.1).
 
 ## K. Revised decoupling order
 
-1. **AppContext** (runtime port) + structured `Event` model. *(easy)*
-2. **Operation layer** — `OperationRequest`/`OperationResult` + concrete ops
-   (declarative shells). *(easy)*
-3. **Parsers** onto `AppContext` via `ParserRegistry`. *(easy)*
-4. **Geometry Core** — `GeometryEngine` interface over current shapely impl.
-   *(easy→medium)*
-5. **camlib base classes** (`Gerber/Excellon/Geometry/CNCjob`) on `AppContext`;
-   smoke: Gerber → isolate → toolpath. *(medium)*
-6. **Project model + dependency graph** + `OperationRunner` (replaces
-   `ObjectCollection` headless). *(medium)*
-7. **MachineBackend** — separate preprocessor audit → headless G-code emit.
-   *(medium)*
-8. **Global-state + concurrency hardening** (per-job cancel, per-request context,
-   concurrency test). *(medium)*
-9. **Lift logic out of `on_*` GUI handlers** in CNCJob/Geometry, guided by
-   golden-file + golden-timing tests. *(hard, last)*
-10. **FastAPI** thin wrapper over `flatcam_core`. *(easy once 1–9 land)*
+1. ✅ **AppContext** (runtime port) + structured `Event` model.
+   → `flatcam_core/context.py`: `AppContext` ABC, `HeadlessAdapter`, `Event` dataclass.
 
-Steps 1–5 likely yield headless Gerber → isolation → drill → G-code. Steps 6–8
-make it a *correct service* (durable model, safe under concurrency). Step 9 is
-the only genuinely hard, localized work; step 10 is mechanical.
+2. ✅ **Operation layer** — `OperationRequest`/`OperationResult` + `OperationKind` enum.
+   → `flatcam_core/operations.py`: declarative shells + `REQUIRED_PARAMS` table.
+
+3. ✅ **Parsers** onto `AppContext` via `ParserRegistry`.
+   → `flatcam_core/parsers.py`: registry with case-insensitive dispatch.
+
+4. ✅ **Geometry Core** — `GeometryEngine` interface over current shapely impl.
+   → `flatcam_core/geometry.py`: `GeometryEngine` ABC + `ShapelyGeometryEngine`.
+
+5. ✅ **camlib base classes** (`Gerber/Excellon/Geometry/CNCjob`) on `AppContext`;
+   smoke: Gerber → isolate → toolpath.
+   → `flatcam_core/compat.py`: `AppContextFacade` + `HEADLESS_DEFAULTS`.
+   → `tests/test_smoke_headless.py`: 26 passing tests (Gerber init, isolation, cancel).
+   *Note: camlib unchanged — facade satisfies its duck-type `self.app` interface.*
+
+6. ✅ **Project model + dependency graph** + `OperationRunner` (replaces
+   `ObjectCollection` headless).
+   → `flatcam_core/project.py`: `Project`, `Document`, `OperationNode`, `Artifact`.
+   → `flatcam_core/runner.py`: `OperationRunner` with topological walk + dry-run.
+
+7. ⬜ **MachineBackend** — separate preprocessor audit → headless G-code emit.
+   *(medium)*
+
+8. ⬜ **Global-state + concurrency hardening** (per-job cancel, per-request context,
+   concurrency test). *(medium)*
+
+9. ⬜ **Lift logic out of `on_*` GUI handlers** in CNCJob/Geometry, guided by
+   golden-file + golden-timing tests. *(hard, last)*
+
+10. ⬜ **FastAPI** thin wrapper over `flatcam_core`. *(easy once 1–9 land)*
+
+Steps 1–6 are complete; headless Gerber → isolation → toolpath is proven in CI.
+Steps 7–8 are the next frontier before wiring up a real end-to-end G-code pipeline.
 
 ---
 
