@@ -237,8 +237,13 @@ golden timings alongside the golden G-code files (plan 1F.1).
    → `flatcam_core/project.py`: `Project`, `Document`, `OperationNode`, `Artifact`.
    → `flatcam_core/runner.py`: `OperationRunner` with topological walk + dry-run.
 
-7. ⬜ **MachineBackend** — separate preprocessor audit → headless G-code emit.
-   *(medium)*
+7. ✅ **MachineBackend** — separate preprocessor audit → headless G-code emit.
+   → `flatcam_core/machine.py`: `ToolpathParams` (typed `p` dataclass), `MachineBackend` ABC
+     (11 abstract methods + shared `position_code`/`startz_code`/`dwell_code` defaults),
+     `MachineRegistry` (`__getitem__` for legacy compat), `PreProcAdapter` (wraps all 28
+     existing preprocessors without changing them), `load_machine_registry()`.
+   → `tests/test_machine.py`: 36 passing tests (params, bed-skew math, registry, adapter,
+     integration load of real preprocessors).
 
 8. ⬜ **Global-state + concurrency hardening** (per-job cancel, per-request context,
    concurrency test). *(medium)*
@@ -248,8 +253,9 @@ golden timings alongside the golden G-code files (plan 1F.1).
 
 10. ⬜ **FastAPI** thin wrapper over `flatcam_core`. *(easy once 1–9 land)*
 
-Steps 1–6 are complete; headless Gerber → isolation → toolpath is proven in CI.
-Steps 7–8 are the next frontier before wiring up a real end-to-end G-code pipeline.
+Steps 1–7 are complete; headless Gerber → isolation → toolpath is proven in CI,
+and all 28 preprocessors are loadable and callable without a QApplication.
+Step 8 (global-state + concurrency hardening) is the next frontier.
 
 ---
 

@@ -22,6 +22,13 @@ Quick start (headless):
 from .context import AppContext, Event, HeadlessAdapter
 from .compat import AppContextFacade, HEADLESS_DEFAULTS
 from .geometry import GeometryEngine, ShapelyGeometryEngine
+from .machine import (
+    MachineBackend,
+    MachineRegistry,
+    PreProcAdapter,
+    ToolpathParams,
+    load_machine_registry,
+)
 from .operations import REQUIRED_PARAMS, OperationKind, OperationRequest, OperationResult
 from .parsers import ParserRegistry
 from .project import Artifact, ArtifactKind, Document, OperationNode, Project
@@ -38,6 +45,12 @@ __all__ = [
     # geometry
     "GeometryEngine",
     "ShapelyGeometryEngine",
+    # machine backend
+    "MachineBackend",
+    "MachineRegistry",
+    "PreProcAdapter",
+    "ToolpathParams",
+    "load_machine_registry",
     # operations
     "OperationKind",
     "OperationRequest",

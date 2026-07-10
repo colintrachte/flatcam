@@ -1,0 +1,3 @@
+{
+  "_comment": "name -> free-text search hint for <name>/relative/path entries in roadmap file lists. Example (delete once you add your own): \"some-upstream\": \"SomeUpstream project source on GitHub (github.com/org/some-upstream)\""
+}
