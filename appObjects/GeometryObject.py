@@ -20,6 +20,7 @@ from shapely.affinity import scale, translate
 from shapely.ops import unary_union
 
 from camlib import Geometry, flatten_shapely_geometry
+from flatcam_core.geometry import count_vertex_points, simplify_tool_geometry
 
 import re
 import ezdxf
@@ -501,18 +502,9 @@ class GeometryObject(FlatCAMObj, Geometry):
     def on_calculate_vertex_points(self):
         self.app.log.debug("GeometryObject.on_calculate_vertex_points()")
 
-        vertex_points = 0
-
-        for tool in self.tools:
-            geometry = self.tools[tool]['solid_geometry']
-            flattened_geo = self.flatten_list(obj_list=geometry)
-            for geo in flattened_geo:
-                if geo.geom_type == 'Polygon':
-                    vertex_points += len(list(geo.exterior.coords))
-                    for inter in geo.interiors:
-                        vertex_points += len(list(inter.coords))
-                if geo.geom_type in ['LineString', 'LinearRing']:
-                    vertex_points += len(list(geo.coords))
+        vertex_points = count_vertex_points(
+            [tool['solid_geometry'] for tool in self.tools.values()]
+        )
 
         self.ui.vertex_points_entry.set_value(vertex_points)
         self.app.inform.emit('[success] %s' % _("Vertex points calculated."))
@@ -524,20 +516,7 @@ class GeometryObject(FlatCAMObj, Geometry):
 
         def task_job():
             with self.app.proc_container.new('%s...' % _("Simplify")):
-                for tool in self.tools:
-                    new_tool_geo = []
-                    geometry = self.tools[tool]['solid_geometry']
-                    flattened_geo = self.flatten_list(obj_list=geometry)
-                    for geo in flattened_geo:
-                        new_tool_geo.append(geo.simplify(tolerance=tol))
-                    self.tools[tool]['solid_geometry'] = deepcopy(new_tool_geo)
-
-                # update the solid_geometry
-                total_geo = []
-                for tool in self.tools:
-                    total_geo += self.tools[tool]['solid_geometry']
-
-                self.solid_geometry = unary_union(total_geo)
+                self.tools, self.solid_geometry = simplify_tool_geometry(self.tools, tol)
 
                 # plot the new geometry
                 self.app.plot_all()

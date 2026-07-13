@@ -253,15 +253,19 @@ golden timings alongside the golden G-code files (plan 1F.1).
    `isolation_geometry` on separate adapters is deterministic and cancel-isolated.
    `MachineRegistry` reads are thread-safe. No module-level mutable singletons found.
 
-9. ⬜ **Lift logic out of `on_*` GUI handlers** in CNCJob/Geometry, guided by
+9. 🟨 **Lift logic out of `on_*` GUI handlers** in CNCJob/Geometry, guided by
    golden-file + golden-timing tests. *(hard, last)*
+   → Representative Geometry simplify/count → CNC G-code persistence slice now
+   delegates to Qt-free `flatcam_core` functions, with parity tests. Broader
+   object construction and plotting handlers remain desktop-owned.
 
 10. ⬜ **FastAPI** thin wrapper over `flatcam_core`. *(easy once 1–9 land)*
 
 Steps 1–8 are complete; headless Gerber → isolation → toolpath is proven in CI,
 all 28 preprocessors are loadable and callable without a QApplication, and
 concurrent per-job isolation is verified with 14 concurrency tests.
-Step 9 (lift logic from `on_*` GUI handlers) is the next frontier.
+Step 9 now has a tested representative vertical slice; completing the broader
+handler inventory remains the next frontier.
 
 ---
 

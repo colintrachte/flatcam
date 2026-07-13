@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Any, List
+from copy import deepcopy
+from typing import Any, List, Mapping
 
 
 class GeometryEngine(ABC):
@@ -84,3 +85,60 @@ class ShapelyGeometryEngine(GeometryEngine):
             "pocket() not yet wired — implement via camlib.CNCjob.clear_polygon "
             "in OperationRunner (audit step 5)"
         )
+
+
+def count_vertex_points(geometries: Any) -> int:
+    """Count editable vertices in nested polygon and line geometry."""
+    count = 0
+    for geometry in _flatten_geometries(geometries):
+        if geometry.geom_type == "Polygon":
+            count += len(geometry.exterior.coords)
+            count += sum(len(interior.coords) for interior in geometry.interiors)
+        elif geometry.geom_type in {"LineString", "LinearRing"}:
+            count += len(geometry.coords)
+    return count
+
+
+def simplify_tool_geometry(
+    tools: Mapping[Any, Mapping[str, Any]], tolerance: float
+) -> tuple[dict[Any, dict[str, Any]], Any]:
+    """Return simplified tool data and its combined solid geometry.
+
+    The input mapping is not mutated. This keeps the operation usable by both
+    desktop handlers and non-GUI callers.
+    """
+    from shapely.ops import unary_union
+
+    simplified_tools = deepcopy(dict(tools))
+    all_geometry = []
+    for tool in simplified_tools.values():
+        geometry = _flatten_geometries(tool.get("solid_geometry", []))
+        simplified = [shape.simplify(tolerance=tolerance) for shape in geometry]
+        tool["solid_geometry"] = simplified
+        all_geometry.extend(simplified)
+
+    return simplified_tools, unary_union(all_geometry)
+
+
+def _flatten_geometries(value: Any) -> list[Any]:
+    """Flatten nested containers and Shapely multi-geometries."""
+    if value is None:
+        return []
+    if hasattr(value, "geom_type"):
+        if value.geom_type.startswith("Multi") or value.geom_type == "GeometryCollection":
+            flattened = []
+            for geometry in value.geoms:
+                flattened.extend(_flatten_geometries(geometry))
+            return flattened
+        return [value]
+    if isinstance(value, (str, bytes)):
+        return []
+    try:
+        values = iter(value)
+    except TypeError:
+        return []
+
+    flattened = []
+    for item in values:
+        flattened.extend(_flatten_geometries(item))
+    return flattened

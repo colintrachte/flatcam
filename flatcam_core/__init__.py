@@ -21,7 +21,13 @@ Quick start (headless):
 
 from .context import AppContext, Event, HeadlessAdapter
 from .compat import AppContextFacade, HEADLESS_DEFAULTS
-from .geometry import GeometryEngine, ShapelyGeometryEngine
+from .gcode import write_gcode
+from .geometry import (
+    GeometryEngine,
+    ShapelyGeometryEngine,
+    count_vertex_points,
+    simplify_tool_geometry,
+)
 from .machine import (
     MachineBackend,
     MachineRegistry,
@@ -46,6 +52,10 @@ __all__ = [
     # geometry
     "GeometryEngine",
     "ShapelyGeometryEngine",
+    "count_vertex_points",
+    "simplify_tool_geometry",
+    # G-code persistence
+    "write_gcode",
     # machine backend
     "MachineBackend",
     "MachineRegistry",

@@ -17,6 +17,7 @@ from appObjects.AppObjectTemplate import FlatCAMObj, ObjectDeleted
 from appGUI.GUIElements import FCFileSaveDialog, FCCheckBox
 from appGUI.ObjectUI import CNCObjectUI
 from camlib import CNCjob
+from flatcam_core.gcode import write_gcode
 
 import os
 import sys
@@ -751,14 +752,11 @@ class CNCJobObject(FlatCAMObj, CNCjob):
 
         try:
             force_windows_line_endings = self.app.options['cncjob_line_ending']
-            if force_windows_line_endings and sys.platform != 'win32':
-                with open(filename, 'w', newline='\r\n') as f:
-                    for line in self.source_file:
-                        f.write(line)
-            else:
-                with open(filename, 'w') as f:
-                    for line in self.source_file:
-                        f.write(line)
+            write_gcode(
+                filename,
+                self.source_file,
+                force_windows_line_endings=force_windows_line_endings and sys.platform != 'win32',
+            )
         except FileNotFoundError:
             self.app.inform.emit('[WARNING_NOTCL] %s' % _("No such file or directory"))
             return
@@ -1173,14 +1171,11 @@ class CNCJobObject(FlatCAMObj, CNCjob):
         if filename is not None:
             try:
                 force_windows_line_endings = self.app.options['cncjob_line_ending']
-                if force_windows_line_endings and sys.platform != 'win32':
-                    with open(filename, 'w', newline='\r\n') as f:
-                        for line in lines:
-                            f.write(line)
-                else:
-                    with open(filename, 'w') as f:
-                        for line in lines:
-                            f.write(line)
+                write_gcode(
+                    filename,
+                    lines,
+                    force_windows_line_endings=force_windows_line_endings and sys.platform != 'win32',
+                )
             except FileNotFoundError:
                 self.app.inform.emit('[WARNING_NOTCL] %s' % _("No such file or directory"))
                 return

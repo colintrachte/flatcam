@@ -84,17 +84,18 @@ class OperationRunner:
                 errors.append(str(exc))
         return errors
 
-    def run_all(self, *, dry_run: bool = False) -> None:
+    def run_all(self, *, dry_run: bool = False) -> Dict[str, OperationResult]:
         """Execute all pending operations until the graph is stable.
 
         dry_run=True validates params and handler registration for every pending
         operation but does not call any handler or modify the project graph.
         Useful for CI preflight and UI pre-run checks.
         """
+        results: Dict[str, OperationResult] = {}
         if dry_run:
             for err in self.validate():
                 self.ctx.log.error("dry-run: %s", err)
-            return
+            return results
 
         while True:
             ready = self.project.ready_operations()
@@ -103,13 +104,14 @@ class OperationRunner:
             made_progress = False
             for op in ready:
                 if self.ctx.cancel.is_set():
-                    return
+                    return results
                 status_before = op.status
-                self._execute(op)
+                results[op.id] = self._execute(op)
                 if op.status != status_before:
                     made_progress = True
             if not made_progress:
                 break
+        return results
 
     def run_one(self, op_id: str) -> OperationResult:
         op = self.project.operations[op_id]

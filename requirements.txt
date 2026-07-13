@@ -68,5 +68,10 @@ pyserial>=3.4
 darkdetect
 
 
+# --- Headless HTTP service ---
+fastapi>=0.115
+uvicorn>=0.30
+
+
 # --- Dark mode detection ---
 # (dark/light theme is applied via the bundled libs/qdarktheme — no separate install needed)

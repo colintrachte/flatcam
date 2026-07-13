@@ -190,6 +190,21 @@ flatcam.py --headless=1           Run without GUI (for scripted batch jobs)
 python flatcam.py --headless=1 --shellfile=my_job.FlatScript
 ```
 
+### HTTP service
+
+Start the thin FastAPI adapter over `flatcam_core`:
+
+```bash
+python -m flatcam_service
+```
+
+The API listens on `http://127.0.0.1:8000`. Interactive documentation is at
+`/docs`; `POST /v1/run` validates or executes a stateless project operation
+graph, and `GET /v1/operations` lists operations with registered handlers.
+Document paths are restricted to the current directory by default; set
+`FLATCAM_SERVICE_ROOT` to choose another allowed input directory. Artifact data
+is omitted unless the request sets `include_artifact_data` to `true`.
+
 ---
 
 ## Project structure
