@@ -1,2 +1,2 @@
-portable=False
+portable=True
 headless=False

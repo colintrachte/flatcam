@@ -54,8 +54,9 @@ FlatCAM.spec
 
 # --- FlatCAM runtime files ---
 # In normal mode FlatCAM writes to %APPDATA%\FlatCAM, not the repo.
-# In portable mode it writes to ../../config (outside the repo).
-# These patterns guard against accidental writes here.
+# Direct repository runs use portable mode and write mutable state to /config.
+# Keep configuration.txt tracked, but ignore generated preferences, databases,
+# history, logs, and copied preprocessors.
 *.FlatConfig
 *.FlatDB
 /config/recent.json

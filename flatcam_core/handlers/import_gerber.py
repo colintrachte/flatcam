@@ -46,7 +46,7 @@ def handle_import_gerber(
     art = Artifact(
         name=os.path.basename(file_path),
         kind=ArtifactKind.GEOMETRY,
-        producer_op=req.kind.value,
+        producer_op=req.operation_id,
         data={
             "solid_geometry": gerber.solid_geometry,
             "units": gerber.units,

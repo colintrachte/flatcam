@@ -152,7 +152,7 @@ def handle_export_gcode(
     out_art = Artifact(
         name=f"gcode_{preprocessor}",
         kind=ArtifactKind.GCODE,
-        producer_op=req.kind.value,
+        producer_op=req.operation_id,
         source_request=dict(p),
         data={"gcode": full_gcode, "preprocessor": preprocessor},
     )

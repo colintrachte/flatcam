@@ -72,6 +72,7 @@ from appGUI.themes import dark_style_sheet, light_style_sheet
 from appCommon.Common import color_variant
 from appCommon.Common import ExclusionAreas
 from appCommon.Common import AppLogging
+from appCommon.tool_database_seed import seed_factory_tool_database
 from appCommon.RegisterFileKeywords import RegisterFK, Extensions, KeyWords
 
 from appHandlers.appIO import appIO
@@ -507,7 +508,7 @@ class App(QtCore.QObject):
                 # self.data_path = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, None, 0) + '\\FlatCAM'
                 self.data_path = os.path.join(os.getenv('appdata'), 'FlatCAM')
             else:
-                self.data_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '\\config'
+                self.data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config')
 
             self.os = 'windows'
         else:  # Linux/Unix/MacOS
@@ -526,18 +527,6 @@ class App(QtCore.QObject):
         if not os.path.exists(self.preprocessorpaths):
             os.makedirs(self.preprocessorpaths)
             self.log.debug('Created preprocessors folder: ' + self.preprocessorpaths)
-
-        # create tools_db.FlatDB file if there is none
-        db_path = self.tools_database_path()
-
-        try:
-            f = open(db_path)
-            f.close()
-        except IOError:
-            self.log.debug('Creating empty tools_db.FlatDB')
-            f = open(db_path, 'w')
-            json.dump({}, f)
-            f.close()
 
         # create current_defaults.FlatConfig file if there is none
         def_path = self.defaults_path()
@@ -634,6 +623,10 @@ class App(QtCore.QObject):
         self.app_units = self.options["units"]
         self.default_units = self.defaults["units"]
         self.decimals = int(self.options['units_precision'])
+
+        db_path = self.tools_database_path()
+        if seed_factory_tool_database(db_path, self.options, self.app_units):
+            self.log.debug('Created tools database from factory presets')
 
         if self.options["global_theme"] == 'default':
             self.resource_location = 'assets/resources'

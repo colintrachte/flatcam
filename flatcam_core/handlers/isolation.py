@@ -76,7 +76,7 @@ def handle_isolation(
     out_art = Artifact(
         name=f"isolation_d{tool_dia}_p{passes}",
         kind=ArtifactKind.TOOLPATH,
-        producer_op=req.kind.value,
+        producer_op=req.operation_id,
         source_request=dict(req.parameters),
         data={"solid_geometry": all_rings, "tool_dia": tool_dia},
     )

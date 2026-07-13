@@ -27,6 +27,7 @@ def test_operation_request_defaults():
     assert req.tool_id is None
     assert req.machine_profile is None
     assert req.material_profile is None
+    assert req.operation_id is None
 
 
 def test_operation_request_with_values():

@@ -304,7 +304,7 @@ def test_preproc_adapter_missing_method_returns_empty():
     assert result == ""
 
 
-def test_preproc_adapter_raising_method_returns_empty():
+def test_preproc_adapter_raising_method_propagates_error():
     class Buggy:
         include_header = True
         def lift_code(self, p): raise ValueError("oops")
@@ -320,7 +320,9 @@ def test_preproc_adapter_raising_method_returns_empty():
         def spindle_stop_code(self, p): return ""
 
     adapter = PreProcAdapter(Buggy())
-    assert adapter.lift_code(ToolpathParams()) == ""
+    with pytest.raises(RuntimeError, match=r"Buggy.*lift_code") as exc_info:
+        adapter.lift_code(ToolpathParams())
+    assert isinstance(exc_info.value.__cause__, ValueError)
 
 
 def test_preproc_adapter_passes_extra_fields():

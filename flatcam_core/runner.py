@@ -80,7 +80,7 @@ class OperationRunner:
             errors.extend(self._validate_params(op))
             try:
                 get_handler(OperationKind(op.kind))
-            except NotImplementedError as exc:
+            except (ValueError, NotImplementedError) as exc:
                 errors.append(str(exc))
         return errors
 
@@ -100,10 +100,16 @@ class OperationRunner:
             ready = self.project.ready_operations()
             if not ready:
                 break
+            made_progress = False
             for op in ready:
                 if self.ctx.cancel.is_set():
                     return
+                status_before = op.status
                 self._execute(op)
+                if op.status != status_before:
+                    made_progress = True
+            if not made_progress:
+                break
 
     def run_one(self, op_id: str) -> OperationResult:
         op = self.project.operations[op_id]
@@ -157,6 +163,7 @@ class OperationRunner:
                 kind=OperationKind(op.kind),
                 inputs=self._resolve_inputs(op.inputs),
                 parameters=dict(op.params),
+                operation_id=op.id,
             )
             result = _handler(req, self.project, self.ctx)
             elapsed_ms = (time.perf_counter() - t0) * 1000.0

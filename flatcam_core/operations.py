@@ -34,6 +34,7 @@ class OperationRequest:
     tool_id: Optional[str] = None
     machine_profile: Optional[str] = None
     material_profile: Optional[str] = None
+    operation_id: Optional[str] = None
 
 
 @dataclass

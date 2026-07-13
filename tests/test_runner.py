@@ -26,7 +26,11 @@ def _ok_handler(req, project, ctx):
 
 
 def _ok_handler_with_artifact(req, project, ctx):
-    art = Artifact(name="output", kind=ArtifactKind.TOOLPATH)
+    art = Artifact(
+        name="output",
+        kind=ArtifactKind.TOOLPATH,
+        producer_op=req.operation_id,
+    )
     project.add_artifact(art)
     return OperationResult(status="ok", outputs=[art.id])
 
@@ -90,6 +94,13 @@ def test_validate_missing_required_param(clean_handlers, ctx, project):
     assert any("tool_dia" in e for e in errors)
 
 
+def test_validate_unknown_operation_kind_returns_error(clean_handlers, ctx, project):
+    op = OperationNode(kind="future_operation")
+    project.add_operation(op)
+    errors = OperationRunner(project, ctx).validate()
+    assert any("future_operation" in error for error in errors)
+
+
 def test_validate_skips_done_ops(clean_handlers, ctx, project):
     # A done op with no handler should produce no error.
     op = OperationNode(kind=OperationKind.ISOLATION.value, status="done")
@@ -140,6 +151,18 @@ def test_run_all_respects_cancel(clean_handlers, project):
     assert op.status == "pending"
 
 
+def test_run_all_stops_when_ready_operation_has_invalid_params(
+    clean_handlers, ctx, project
+):
+    register_handler(OperationKind.ISOLATION, _ok_handler)
+    op = OperationNode(kind=OperationKind.ISOLATION.value, params={})
+    project.add_operation(op)
+
+    OperationRunner(project, ctx).run_all()
+
+    assert op.status == "pending"
+
+
 def test_run_all_partial_counts_as_done(clean_handlers, ctx, project):
     register_handler(OperationKind.IMPORT_GERBER, _partial_handler)
     op = OperationNode(kind=OperationKind.IMPORT_GERBER.value)
@@ -149,12 +172,22 @@ def test_run_all_partial_counts_as_done(clean_handlers, ctx, project):
 
 
 def test_run_all_chained_operations(clean_handlers, ctx, project):
-    """An op depending on a doc executes after the doc is available."""
+    """An operation-node dependency executes after its producer."""
     doc = Document(name="top.gbr")
     project.add_document(doc)
 
-    register_handler(OperationKind.ISOLATION, _ok_handler_with_artifact)
-    register_handler(OperationKind.EXPORT_GCODE, _ok_handler)
+    calls = []
+
+    def isolation_handler(req, proj, c):
+        calls.append("isolation")
+        return _ok_handler_with_artifact(req, proj, c)
+
+    def export_handler(req, proj, c):
+        calls.append(("export", list(req.inputs)))
+        return _ok_handler(req, proj, c)
+
+    register_handler(OperationKind.ISOLATION, isolation_handler)
+    register_handler(OperationKind.EXPORT_GCODE, export_handler)
 
     iso_op = OperationNode(
         kind=OperationKind.ISOLATION.value,
@@ -165,13 +198,14 @@ def test_run_all_chained_operations(clean_handlers, ctx, project):
 
     export_op = OperationNode(
         kind=OperationKind.EXPORT_GCODE.value,
-        inputs=[],  # will be wired after iso; for this test just check ordering
+        inputs=[iso_op.id],
     )
     project.add_operation(export_op)
 
     OperationRunner(project, ctx).run_all()
     assert iso_op.status == "done"
     assert export_op.status == "done"
+    assert calls == ["isolation", ("export", [iso_op.outputs[0]])]
 
 
 # --- run_one ---
@@ -227,3 +261,17 @@ def test_run_one_populates_op_outputs(clean_handlers, ctx, project):
     result = OperationRunner(project, ctx).run_one(op.id)
     assert result.outputs
     assert op.outputs == result.outputs
+
+
+def test_run_one_sets_artifact_producer_operation_id(clean_handlers, ctx, project):
+    register_handler(OperationKind.ISOLATION, _ok_handler_with_artifact)
+    op = OperationNode(
+        kind=OperationKind.ISOLATION.value,
+        params={"tool_dia": 0.1},
+    )
+    project.add_operation(op)
+
+    result = OperationRunner(project, ctx).run_one(op.id)
+
+    artifact = project.artifacts[result.outputs[0]]
+    assert artifact.producer_op == op.id

@@ -307,9 +307,12 @@ class PreProcAdapter(MachineBackend):
             return ""
         try:
             result = method(d)
-            return result if result is not None else ""
-        except Exception:
-            return ""
+        except Exception as exc:
+            name = type(self._pp).__name__
+            raise RuntimeError(
+                f"Preprocessor '{name}' failed in {method_name}()"
+            ) from exc
+        return result if result is not None else ""
 
     # --- MachineBackend abstract methods ---
 
