@@ -116,6 +116,21 @@ class OperationRunner:
             return [f"Operation '{op.kind}' missing required params: {missing}"]
         return []
 
+    def _resolve_inputs(self, inputs: list) -> list:
+        """Replace done-operation-node IDs in inputs with their first output artifact ID.
+
+        This lets the graph be wired up using operation-node IDs as dependency
+        references; handlers always receive resolved document/artifact IDs.
+        """
+        resolved = []
+        for inp in inputs:
+            dep_op = self.project.operations.get(inp)
+            if dep_op is not None and dep_op.status == "done" and dep_op.outputs:
+                resolved.append(dep_op.outputs[0])
+            else:
+                resolved.append(inp)
+        return resolved
+
     def _execute(self, op: OperationNode) -> OperationResult:
         # Validate before touching op.status so a bad config stays "pending".
         param_errors = self._validate_params(op)
@@ -140,7 +155,7 @@ class OperationRunner:
             _handler = get_handler(OperationKind(op.kind))
             req = OperationRequest(
                 kind=OperationKind(op.kind),
-                inputs=list(op.inputs),
+                inputs=self._resolve_inputs(op.inputs),
                 parameters=dict(op.params),
             )
             result = _handler(req, self.project, self.ctx)

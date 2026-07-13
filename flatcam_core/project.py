@@ -100,12 +100,25 @@ class Project:
         return set(self.documents) | set(self.artifacts)
 
     def ready_operations(self) -> List[OperationNode]:
-        """Return pending operations whose every input is already satisfied."""
+        """Return pending operations whose every input is already satisfied.
+
+        An input is satisfied if it is a document/artifact ID *or* the ID of an
+        operation node whose status is "done" (meaning its outputs are available).
+        This lets callers chain operations by operation-node ID without having to
+        know the output artifact IDs up front.
+        """
         available = self._available_ids()
+        done_ops = {
+            op_id for op_id, op in self.operations.items() if op.status == "done"
+        }
+
+        def satisfied(inp: str) -> bool:
+            return inp in available or inp in done_ops
+
         return [
             op for op in self.operations.values()
             if op.status == "pending"
-            and all(inp in available for inp in op.inputs)
+            and all(satisfied(inp) for inp in op.inputs)
         ]
 
     def stale_operations(self) -> List[OperationNode]:

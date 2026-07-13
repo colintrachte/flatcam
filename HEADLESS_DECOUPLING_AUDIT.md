@@ -245,17 +245,23 @@ golden timings alongside the golden G-code files (plan 1F.1).
    → `tests/test_machine.py`: 36 passing tests (params, bed-skew math, registry, adapter,
      integration load of real preprocessors).
 
-8. ⬜ **Global-state + concurrency hardening** (per-job cancel, per-request context,
+8. ✅ **Global-state + concurrency hardening** (per-job cancel, per-request context,
    concurrency test). *(medium)*
+   → `tests/test_concurrency.py`: 14 passing tests.
+   Confirmed: `HeadlessAdapter.cancel` is per-instance (`threading.Event`); `config` and
+   `AppContextFacade.options` are `MappingProxyType` (immutable). Concurrent
+   `isolation_geometry` on separate adapters is deterministic and cancel-isolated.
+   `MachineRegistry` reads are thread-safe. No module-level mutable singletons found.
 
 9. ⬜ **Lift logic out of `on_*` GUI handlers** in CNCJob/Geometry, guided by
    golden-file + golden-timing tests. *(hard, last)*
 
 10. ⬜ **FastAPI** thin wrapper over `flatcam_core`. *(easy once 1–9 land)*
 
-Steps 1–7 are complete; headless Gerber → isolation → toolpath is proven in CI,
-and all 28 preprocessors are loadable and callable without a QApplication.
-Step 8 (global-state + concurrency hardening) is the next frontier.
+Steps 1–8 are complete; headless Gerber → isolation → toolpath is proven in CI,
+all 28 preprocessors are loadable and callable without a QApplication, and
+concurrent per-job isolation is verified with 14 concurrency tests.
+Step 9 (lift logic from `on_*` GUI handlers) is the next frontier.
 
 ---
 

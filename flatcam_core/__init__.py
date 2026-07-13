@@ -28,6 +28,7 @@ from .machine import (
     PreProcAdapter,
     ToolpathParams,
     load_machine_registry,
+    load_preprocessors,
 )
 from .operations import REQUIRED_PARAMS, OperationKind, OperationRequest, OperationResult
 from .parsers import ParserRegistry
@@ -51,6 +52,7 @@ __all__ = [
     "PreProcAdapter",
     "ToolpathParams",
     "load_machine_registry",
+    "load_preprocessors",
     # operations
     "OperationKind",
     "OperationRequest",

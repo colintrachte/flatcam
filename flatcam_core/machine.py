@@ -357,8 +357,39 @@ class PreProcAdapter(MachineBackend):
 
 
 # ---------------------------------------------------------------------------
-# load_machine_registry — headless entry point
+# load_preprocessors / load_machine_registry — headless entry points
 # ---------------------------------------------------------------------------
+
+def _default_preprocessors_dir() -> str:
+    return os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "preprocessors",
+    )
+
+
+def load_preprocessors(
+    preprocessors_dir: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Load all bundled preprocessors and return the raw PreProc instance dict.
+
+    The returned dict maps preprocessor names to legacy ``PreProc`` instances
+    exactly as ``appPreProcessor.preprocessors`` is populated at runtime.  Pass
+    this to ``HeadlessAdapter(preprocessors=...)`` so that ``CNCjob.__init__``
+    and ``generate_from_geometry_2`` can reach it via ``self.app.preprocessors``.
+
+    Importing appPreProcessor here (not at module top) keeps flatcam_core
+    importable without appPreProcessor on sys.path.
+    """
+    from appPreProcessor import preprocessors as _pp_dict  # type: ignore[import]
+
+    pp_dir = preprocessors_dir or _default_preprocessors_dir()
+    for fpath in sorted(glob.glob(os.path.join(pp_dir, "*.py"))):
+        spec = importlib.util.spec_from_file_location("FlatCAMPostProcessor", fpath)
+        mod = types.ModuleType("FlatCAMPostProcessor")
+        spec.loader.exec_module(mod)
+
+    return _pp_dict  # type: ignore[return-value]
+
 
 def load_machine_registry(
     preprocessors_dir: Optional[str] = None,
@@ -369,26 +400,10 @@ def load_machine_registry(
     ``MachineBackend`` interface.  The returned registry also satisfies the legacy
     ``self.app.preprocessors[name]`` dict-access pattern (via ``__getitem__``).
 
-    Args:
-        preprocessors_dir: Path to the preprocessors directory.  Defaults to the
-            ``preprocessors/`` folder next to this package.
+    For headless ``CNCjob`` use, prefer :func:`load_preprocessors` which returns the
+    raw PreProc dict that ``CNCjob`` and ``generate_from_geometry_2`` expect.
     """
-    if preprocessors_dir is None:
-        preprocessors_dir = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "preprocessors",
-        )
-
-    # Import the module-level preprocessors dict from appPreProcessor.
-    # Importing it here (rather than at module top) keeps flatcam_core importable
-    # without appPreProcessor on the path.
-    from appPreProcessor import preprocessors as _pp_dict  # type: ignore[import]
-
-    for fpath in sorted(glob.glob(os.path.join(preprocessors_dir, "*.py"))):
-        spec = importlib.util.spec_from_file_location("FlatCAMPostProcessor", fpath)
-        mod = types.ModuleType("FlatCAMPostProcessor")
-        spec.loader.exec_module(mod)
-
+    _pp_dict = load_preprocessors(preprocessors_dir)
     registry = MachineRegistry()
     for name, pp in _pp_dict.items():
         registry.register(name, PreProcAdapter(pp))
