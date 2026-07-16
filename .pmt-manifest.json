@@ -13,28 +13,28 @@
       "installed_at": "2026-07-09T01:39:26+00:00"
     },
     "helper_scripts/context_pack.py": {
-      "sha256": "fd17a32f8ab0027c921acfbc2b2be41fbe22bdf099615a72c4cf6642cf369b4a",
-      "template_sha256": "fd17a32f8ab0027c921acfbc2b2be41fbe22bdf099615a72c4cf6642cf369b4a",
+      "sha256": "1d2cdbf3496e084dfb6e9cfed36f50c30f64dfce93cbef2cabc9351b543bed08",
+      "template_sha256": "1d2cdbf3496e084dfb6e9cfed36f50c30f64dfce93cbef2cabc9351b543bed08",
       "template": "helper_scripts/context_pack.py",
-      "installed_at": "2026-07-09T01:39:26+00:00"
+      "installed_at": "2026-07-16T23:24:50+00:00"
     },
     "helper_scripts/route_tasks.py": {
-      "sha256": "f03aa6c81fdd8979030c1f37c7099985b0b795fac5235db6c67ca23a62fe7530",
-      "template_sha256": "f03aa6c81fdd8979030c1f37c7099985b0b795fac5235db6c67ca23a62fe7530",
+      "sha256": "550bf5f0d7a73fe8270d9d0a5be56620dc4e2812b137113d45ca33533b02ffbd",
+      "template_sha256": "550bf5f0d7a73fe8270d9d0a5be56620dc4e2812b137113d45ca33533b02ffbd",
       "template": "helper_scripts/route_tasks.py",
-      "installed_at": "2026-07-09T01:39:26+00:00"
+      "installed_at": "2026-07-16T23:24:50+00:00"
     },
     "helper_scripts/query_model.py": {
-      "sha256": "75258c00c20cd43c87fe110e67652f31aff44dcc00588613c766f6bac43058e1",
-      "template_sha256": "75258c00c20cd43c87fe110e67652f31aff44dcc00588613c766f6bac43058e1",
+      "sha256": "aa102d25d6a7beaaff0a275a5c153134966956543bdaea93ff7560e156afcb7b",
+      "template_sha256": "aa102d25d6a7beaaff0a275a5c153134966956543bdaea93ff7560e156afcb7b",
       "template": "helper_scripts/query_model.py",
-      "installed_at": "2026-07-09T01:39:26+00:00"
+      "installed_at": "2026-07-16T23:24:50+00:00"
     },
     "helper_scripts/pack_task.py": {
-      "sha256": "926d222728a2a125a6a897d68d6b69e5b44f8bc73f9ded8b2bb5e19ea8065222",
-      "template_sha256": "926d222728a2a125a6a897d68d6b69e5b44f8bc73f9ded8b2bb5e19ea8065222",
+      "sha256": "c72c01f1315942cb33b880cbfad636896f3bd72d2d24bfae0b8fe0d4e9ccf3c7",
+      "template_sha256": "c72c01f1315942cb33b880cbfad636896f3bd72d2d24bfae0b8fe0d4e9ccf3c7",
       "template": "helper_scripts/pack_task.py",
-      "installed_at": "2026-07-10T02:15:31+00:00"
+      "installed_at": "2026-07-16T23:24:50+00:00"
     },
     "helper_scripts/README.md": {
       "sha256": "1b86c3300b386606d64bad9c94f8ac8096b10224cfe22dfd92efd8604d7caee9",
@@ -59,6 +59,67 @@
       "template_sha256": "5bc6d09c6721359d1588d6b2e8297967f4679c58c025227a5fc27738b31d7da3",
       "template": "helper_scripts/gui_theme.py",
       "installed_at": "2026-07-10T02:15:31+00:00"
+    },
+    "helper_scripts/executor_registry.json": {
+      "sha256": "56363a11dfe37f62720e65781817ab5830c7e6d6991606684277939f58edd5e0",
+      "template_sha256": "56363a11dfe37f62720e65781817ab5830c7e6d6991606684277939f58edd5e0",
+      "template": "helper_scripts/executor_registry.json",
+      "installed_at": "2026-07-16T23:24:50+00:00"
+    },
+    "helper_scripts/executor_registry.py": {
+      "sha256": "1411ef32c3abb10fa68419af2ff70b3eeb704689c88608448b75b6e386ea096b",
+      "template_sha256": "1411ef32c3abb10fa68419af2ff70b3eeb704689c88608448b75b6e386ea096b",
+      "template": "helper_scripts/executor_registry.py",
+      "installed_at": "2026-07-16T23:24:50+00:00"
+    },
+    "helper_scripts/task_records.py": {
+      "sha256": "62c3e32a00e8b39c746883fb275a4824247d3f60c79d1df087f6d8bf9e20abe7",
+      "template_sha256": "62c3e32a00e8b39c746883fb275a4824247d3f60c79d1df087f6d8bf9e20abe7",
+      "template": "helper_scripts/task_records.py",
+      "installed_at": "2026-07-16T23:24:50+00:00"
+    },
+    "helper_scripts/task_editor.py": {
+      "sha256": "d8307d12a1373a61590d0445ff2e457437968e8991d38ce5012e9f9726d9a235",
+      "template_sha256": "d8307d12a1373a61590d0445ff2e457437968e8991d38ce5012e9f9726d9a235",
+      "template": "helper_scripts/task_editor.py",
+      "installed_at": "2026-07-16T23:24:50+00:00"
+    },
+    "helper_scripts/pack_delivery.py": {
+      "sha256": "fd7aec81769a82e7980d7a22a9193b6e0c8a22c1e5b68c82cffb57befdc95125",
+      "template_sha256": "fd7aec81769a82e7980d7a22a9193b6e0c8a22c1e5b68c82cffb57befdc95125",
+      "template": "helper_scripts/pack_delivery.py",
+      "installed_at": "2026-07-16T23:24:50+00:00"
+    },
+    "helper_scripts/doctor.py": {
+      "sha256": "62fa2fbe66b04066131faec6646861f77b8520fc75f4eceb1c12b77b92e1abb4",
+      "template_sha256": "62fa2fbe66b04066131faec6646861f77b8520fc75f4eceb1c12b77b92e1abb4",
+      "template": "helper_scripts/doctor.py",
+      "installed_at": "2026-07-16T23:24:50+00:00"
+    },
+    "helper_scripts/execution_receipts.py": {
+      "sha256": "532e0f7967efe347339b61dae286287cef4aab3b9f350fb4e40b82c8d5539805",
+      "template_sha256": "532e0f7967efe347339b61dae286287cef4aab3b9f350fb4e40b82c8d5539805",
+      "template": "helper_scripts/execution_receipts.py",
+      "installed_at": "2026-07-16T23:24:50+00:00"
+    },
+    "helper_scripts/pmt_version.json": {
+      "sha256": "73fb8e191bee28eee8013a8881b3d124f16a47f79b3b2c15ce6459b52ebdd343",
+      "template_sha256": "73fb8e191bee28eee8013a8881b3d124f16a47f79b3b2c15ce6459b52ebdd343",
+      "template": "helper_scripts/pmt_version.json",
+      "installed_at": "2026-07-16T23:24:50+00:00"
+    },
+    "helper_scripts/context_load_ceiling.txt": {
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "template_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "template": "templates/seed.context_load_ceiling.txt",
+      "installed_at": "2026-07-16T23:24:50+00:00"
+    },
+    "helper_scripts/execution_receipts.json": {
+      "sha256": "bc8e93fa58a848c69788c1b8179b7776a17e9598e1671594f50fdebd38c5b6b1",
+      "template_sha256": "bc8e93fa58a848c69788c1b8179b7776a17e9598e1671594f50fdebd38c5b6b1",
+      "template": "templates/seed.execution_receipts.json",
+      "installed_at": "2026-07-16T23:24:50+00:00"
     }
-  }
+  },
+  "schema_version": 2
 }

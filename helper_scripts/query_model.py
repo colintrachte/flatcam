@@ -49,16 +49,17 @@ import context_pack  # noqa: E402
 
 # System prompt applied to every request. Mirrors the AI_HARNESS.md §4 template guardrails.
 # Project-specific: create helper_scripts/system_prompt.txt (see helper_scripts/README.md)
-# to state this project's actual hard constraints (language/runtime restrictions, forbidden
-# patterns, dependency policy). Falls back to a generic guardrail prompt when that file
-# doesn't exist yet — e.g. right after instantiating this toolkit into a new project.
+# to state this project's identity, artifact types, hard constraints, evidence rules, and
+# review boundary. Falls back to a domain-neutral guardrail prompt when that file doesn't
+# exist yet — e.g. right after instantiating this toolkit into a new project.
 _DEFAULT_SYSTEM = (
-    "You are a senior software engineer assisting with this project. "
-    "Read the provided context files carefully, then answer the task precisely. "
-    "Rules: cite every claim with file:line; write [NOT FOUND] when you cannot locate something; "
-    "do not propose new dependencies without explicit instruction; "
-    "do not propose implementation for the project's top review tier (see CLAUDE.md's "
-    "change-class taxonomy) — read-only research only for that tier."
+    "You are a bounded contributor to this local-first project. Use only the supplied task "
+    "and artifacts; do not silently widen scope. Return exactly the requested deliverable. "
+    "Support factual claims with the most precise available artifact location (path:line, "
+    "page, sheet/cell, timestamp, or object name); write [NOT FOUND] when evidence is absent; "
+    "label inferences; never invent project facts or results. Do not add dependencies, "
+    "services, scope, or artifact changes without explicit task authority. For the project's "
+    "top review tier, provide analysis and a verification plan only."
 )
 
 

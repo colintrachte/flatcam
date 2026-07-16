@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "verified": "2026-07-14",
+  "executors": [
+    {"id": "human", "modes": ["human-judgment", "human-physical"], "capabilities": ["high-stakes-review", "physical-work", "privacy", "visual-inspection"], "paid": false, "priority": 10},
+    {"id": "tooling", "modes": ["deterministic-tooling"], "capabilities": ["privacy", "repeatable-execution"], "paid": false, "priority": 10},
+    {"id": "qwen", "modes": ["local-ai"], "capabilities": ["large-context", "privacy"], "paid": false, "priority": 20, "budget": {"files": null, "chars": null}},
+    {"id": "gemini", "modes": ["network-ai"], "capabilities": ["visual-inspection", "web-access"], "paid": false, "priority": 30, "budget": {"files": 10, "chars": 32000, "chars_note": "measured signed-out web-composer cap (2026-07-14); signed-in cap is unpublished"}},
+    {"id": "kimi", "modes": ["network-ai"], "capabilities": ["large-context", "web-access"], "paid": false, "priority": 40, "budget": {"files": 20, "chars": 35000, "chars_note": "single observed web-chat limit with safety margin; not an official specification"}},
+    {"id": "chatgpt", "modes": ["network-ai"], "capabilities": ["visual-inspection", "web-access"], "paid": false, "priority": 50, "budget": {"files": 3, "chars": 5000, "chars_note": "documented paid-plan paste-to-attachment threshold; free-tier behavior is undocumented"}},
+    {"id": "perplexity", "modes": ["network-ai"], "capabilities": ["web-access"], "paid": false, "priority": 60, "budget": {"files": 4, "chars": 16000, "chars_note": "approximate character equivalent of the documented 4000-token inline limit"}},
+    {"id": "meta", "modes": ["network-ai"], "capabilities": ["judgment"], "paid": false, "priority": 70, "budget": {"files": 0, "chars": null}},
+    {"id": "openrouter", "modes": ["network-ai"], "capabilities": ["large-context"], "paid": false, "priority": 80, "budget": {"files": null, "chars": null}},
+    {"id": "codex", "modes": ["network-ai"], "capabilities": ["high-stakes-review", "large-context", "multi-project-synthesis", "paid-only-execution", "repository-access", "visual-inspection", "web-access"], "paid": true, "priority": 90},
+    {"id": "claude", "modes": ["network-ai"], "capabilities": ["high-stakes-review", "large-context", "multi-project-synthesis", "paid-only-execution", "repository-access", "web-access"], "paid": true, "priority": 100}
+  ],
+  "pools": {"paid-ai": ["codex", "claude"]},
+  "legacy_routes": ["human", "me", "tooling", "qwen", "gemini", "kimi", "chatgpt", "perplexity", "meta", "openrouter", "paid-ai", "codex", "claude"]
+}

@@ -25,9 +25,10 @@ of a context pack is a deliberately scoped, self-contained file set (see
 docs/ai-harness.md §3), not "everything in this folder."
 
 --max-chars splits the bundle into multiple paste-sized chunks when the
-total exceeds the given character count; it defaults to 100000 (~25k
-tokens, comfortably under every chat UI's paste limit per docs/ai-harness.md
-§3.1) so chunking kicks in automatically for an oversized pack. Chunk
+total exceeds the given character count; it defaults to a generic 100000
+(~25k tokens) ceiling for model-less use. Chat UIs have much tighter and
+different delivery limits; --model warns about those, and Quest Board uses
+the routed model's tighter budget automatically. Chunk
 boundaries always fall between files — a single file is never split
 mid-content, even if that file alone exceeds --max-chars (a warning is
 printed in that case, and the oversized file becomes its own chunk). Each
@@ -41,6 +42,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import executor_registry
+
 # Windows consoles default to a legacy codepage that can't print en/em dashes
 # or arrows from source comments; force UTF-8 so the bundle prints intact.
 for _stream in (sys.stdout, sys.stderr):
@@ -49,66 +52,23 @@ for _stream in (sys.stdout, sys.stderr):
         _reconfig(encoding="utf-8")
 
 # Default --max-chars: the point at which a pack needs splitting into
-# multiple paste-sized chunks (~25k tokens, comfortably under every chat
-# UI's paste limit — see docs/ai-harness.md §3.1). route_tasks.py reuses
+# multiple paste-sized chunks (~25k tokens) for model-less use. Quest Board
+# tightens this to the routed model's known paste budget. route_tasks.py reuses
 # this exact constant as its char-weighted routing threshold rather than
 # inventing a second number for the same underlying constraint.
 DEFAULT_MAX_CHARS = 100_000
 
-# Budgets — must stay in sync with docs/ai-harness.md §1.
-# Last re-verified against provider behavior: 2026-07-05. The chat-UI paste/upload
-# caps below are community-reported and drift with provider policy — re-verify and
-# restamp this date when a value stops matching reality (docs/ai-harness.md §7).
-MODEL_BUDGETS = {
-    # Gemini web app: up to 10 files per prompt (Google's own Gemini Apps help page,
-    # 2026 — this one IS documented, unlike the char cap). Pasting past ~30,000
-    # characters produces a "message too long" error (community-reported, approximate).
-    # The router's ≤3-file cutoff for Gemini is a task-size heuristic (small,
-    # mechanical), not this upload cap.
-    "gemini": {
-        "files": 10,
-        "chars": 30_000,
-        "chars_note": 'approximate — community-reported "message too long" threshold, not an official spec',
-    },
-    # Kimi web app: a 45,821-char pack (task text + files) was flagged by Kimi itself as
-    # "17% over the limit" for a regular chat entry, auto-converting to a file attachment
-    # instead. Implies a real ceiling around ~39,000 chars; budgeted here with a margin
-    # since this is a single observation, not a measured spec. Update if more data comes in.
-    "kimi": {
-        "files": 20,
-        "chars": 35_000,
-        "chars_note": 'single observed data point (author hit "17% over" at ~45.8k chars, implying ~39k) — not an official spec, refine if it recurs',
-    },
-    # ChatGPT Free: pasting more than ~5,000 characters into the message box
-    # silently turns the paste into a file attachment instead of inline text,
-    # which both burns one of the account-wide 3-uploads/24h and breaks the
-    # one-shot/message-1 workflow (docs/ai-harness.md §1, §4). The "5K rule" is
-    # widely community-reported in 2026 (down from the ~10k seen earlier); some
-    # sources tie the paste-to-attachment behavior to paid tiers, so treat 5,000
-    # as a conservative floor, not a hard spec.
-    "chatgpt": {
-        "files": 3,
-        "chars": 5_000,
-        "chars_note": 'community-reported "5K rule" (2026); paste past this becomes a file attachment, burning one of the 3-uploads/24h cap — conservative floor, not an official spec',
-    },
-    "meta": {
-        "files": 0,
-        "chars": None,
-    },  # no upload at all — paste the text body directly into chat
-    # Perplexity free: pasting more than ~8,000 tokens (~20,000 chars) prompts
-    # a switch to file upload instead. Community-reported (aggregator sites,
-    # not Perplexity's own docs) — treat as approximate, not exact.
-    "perplexity": {
-        "files": None,
-        "chars": 20_000,
-        "chars_note": "approximate — community-reported threshold before it prompts a file upload instead of inline paste",
-    },
-    "qwen": {"files": None, "chars": None},  # programmatic via query_model.py — no paste-step limit
-    "openrouter": {
-        "files": None,
-        "chars": None,
-    },  # programmatic via query_model.py — no paste-step limit
-}
+# Volatile per-executor facts have one canonical owner.
+MODEL_BUDGETS = executor_registry.model_budgets()
+
+# Shown beside Quest Board's deliberate one-block override. Keep this short enough
+# to scan in the GUI and synchronized with MODEL_BUDGETS above.
+IGNORE_CHAR_LIMIT_WARNING = (
+    "One-block risks — truncates: Gemini >32k → first 32k only "
+    "(measured signed-out; signed-in unknown).\n"
+    "Becomes a file (paste task separately): ChatGPT >5k (paid); Kimi ~35k; "
+    "Perplexity >4k tokens (~16k chars). Meta.ai: no verified cap or file fallback."
+)
 
 LANG_MAP = {
     ".c": "c",
@@ -287,8 +247,8 @@ def main():
         type=int,
         default=DEFAULT_MAX_CHARS,
         help=f"Split the bundle into multiple paste-sized chunks of at most this many "
-        f"characters each (default: {DEFAULT_MAX_CHARS}, ~25k tokens — comfortably under every "
-        f"chat UI's paste limit). Chunk boundaries always fall between files, never "
+        f"characters each (generic default: {DEFAULT_MAX_CHARS}, ~25k tokens; chat-UI limits "
+        f"vary by model). Chunk boundaries always fall between files, never "
         f"mid-file. Pass 0 to disable chunking and keep a single block.",
     )
     args = ap.parse_args()
