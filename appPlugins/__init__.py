@@ -9,8 +9,10 @@ from appPlugins.ToolFilm import Film
 try:
     from appPlugins.ToolImage import ToolImage
 except ImportError as err:
-    # print(str(err))
-    pass
+    ToolImage = None
+    TOOL_IMAGE_IMPORT_ERROR = err
+else:
+    TOOL_IMAGE_IMPORT_ERROR = None
 
 from appPlugins.ToolDistance import Distance
 from appPlugins.ToolObjectDistance import ObjectDistance

@@ -67,6 +67,7 @@ from appGUI.GUIElements import FCMessageBox, FCInputSpinner, FCButton, DialogBox
     FCInputDoubleSpinner, FCFileSaveDialog, message_dialog, AppSystemTray, FCInputDialogSlider, \
     GLay, FCLabel, DialogBoxChoice, VerticalScrollArea
 from appGUI.themes import dark_style_sheet, light_style_sheet
+from appGUI.StartupSplash import NullStartupSplash
 
 # Various
 from appCommon.Common import color_variant
@@ -287,7 +288,7 @@ class App(QtCore.QObject):
     custom_signal = pyqtSignal(object)
 
     # noinspection PyUnresolvedReferences
-    def __init__(self, qapp, user_defaults=True):
+    def __init__(self, qapp, user_defaults=True, startup_splash=None):
         """
         Starts the application.
 
@@ -311,6 +312,14 @@ class App(QtCore.QObject):
         self.log.info("Starting the application...")
 
         self.qapp = qapp
+        self.splash = startup_splash if startup_splash is not None else NullStartupSplash()
+        show_splash = not isinstance(self.splash, NullStartupSplash)
+        self.startup_safe_mode = False
+        self.splash.set_stage(
+            'preferences',
+            _('Loading preferences'),
+            _('Reading application settings and workspace defaults.')
+        )
 
         # App Editors will be instantiated further below
         self.exc_editor = None
@@ -599,6 +608,14 @@ class App(QtCore.QObject):
         for def_key, def_val in self.defaults.items():
             self.options[def_key] = deepcopy(def_val)
 
+        startup_settings = QSettings("Open Source", "FlatCAM_EVO")
+        force_2d_once = startup_settings.value('startup_force_2d_once', False, type=bool)
+        self.startup_safe_mode = startup_settings.value('startup_safe_mode_once', False, type=bool)
+        startup_settings.remove('startup_force_2d_once')
+        startup_settings.remove('startup_safe_mode_once')
+        if force_2d_once:
+            self.options["global_graphic_engine"] = "2D"
+
         # Always force advanced mode regardless of any saved config
         self.options["global_app_level"] = 'a'
 
@@ -671,41 +688,12 @@ class App(QtCore.QObject):
             # This will write the setting to the platform specific storage.
             del qsettings
 
-        # ###########################################################################################################
-        # ###################################### Setting the Splash Screen ##########################################
-        # ###########################################################################################################
-        splash_settings = QSettings("Open Source", "FlatCAM_EVO")
-        if splash_settings.contains("splash_screen"):
-            show_splash = splash_settings.value("splash_screen")
-        else:
-            splash_settings.setValue('splash_screen', 1)
-
-            # This will write the setting to the platform specific storage.
-            del splash_settings
-            show_splash = 1
-
-        if show_splash and self.cmd_line_headless != 1:
-            splash_pix = QtGui.QPixmap(self.resource_location + '/splash.png')
-            # self.splash = QtWidgets.QSplashScreen(splash_pix, Qt.WindowType.WindowStaysOnTopHint)
-            self.splash = QtWidgets.QSplashScreen(splash_pix)
-            # self.splash.setMask(splash_pix.mask())
-
-            # move splashscreen to the current monitor
-            # desktop = QtWidgets.QApplication.desktop()
-            # screen = desktop.screenNumber(QtGui.QCursor.pos())
-            # screen = QtWidgets.QWidget.screen(self.splash)
-            screen = QtWidgets.QApplication.screenAt(QtGui.QCursor.pos())
-            if screen:
-                current_screen_center = screen.availableGeometry().center()
-                self.splash.move(current_screen_center - self.splash.rect().center())
-
-            self.splash.show()
-            self.splash.showMessage(_("The application is initializing ..."),
-                                    alignment=Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignLeft,
-                                    color=QtGui.QColor("lightgray"))
-        else:
-            self.splash = None
-            show_splash = 0
+        self.splash.set_version(self.version)
+        self.splash.set_stage(
+            'languages',
+            _('Loading language resources'),
+            _('Applying the selected interface language.')
+        )
 
         # ###########################################################################################################
         # ########################################## LOAD LANGUAGES  ################################################
@@ -742,7 +730,18 @@ class App(QtCore.QObject):
 
         # a dictionary that have as keys the name of the preprocessor files and the value is the class from
         # the preprocessor file
-        self.preprocessors = load_preprocessors(self)
+        self.splash.set_stage(
+            'preprocessors',
+            _('Loading preprocessors'),
+            _('Registering manufacturing output profiles.')
+        )
+        self.preprocessors = load_preprocessors(self, include_user=not self.startup_safe_mode)
+        if self.startup_safe_mode:
+            self.report_startup_warning(
+                title=_('Safe mode skipped user preprocessors'),
+                detail=_('Only preprocessors shipped with FlatCAM were loaded for this launch.'),
+                suggestion=_('Review the user preprocessors folder before returning to normal startup.')
+            )
 
         # make sure that always the 'default' preprocessor is the first item in the dictionary
         if 'default' in self.preprocessors.keys():
@@ -802,6 +801,12 @@ class App(QtCore.QObject):
 
         # update the 'options' dict with the setting in QSetting
         self.options['global_theme'] = theme
+
+        self.splash.set_stage(
+            'interface',
+            _('Building the interface'),
+            _('Creating the workspace, tools, and preferences panels.')
+        )
 
         # ########################
         self.ui = MainGUI(self)
@@ -916,22 +921,21 @@ class App(QtCore.QObject):
         self.app_cursor = None
         self.hover_shapes = None
 
-        if show_splash:
-            self.splash.showMessage(_("The application is initializing ...\n"
-                                      "Canvas initialization started."),
-                                    alignment=Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignLeft,
-                                    color=QtGui.QColor("lightgray"))
+        self.splash.set_stage(
+            'canvas',
+            _('Preparing the graphics canvas'),
+            _('Starting the %s renderer.') % self.options["global_graphic_engine"]
+        )
         start_plot_time = time.time()  # debug
 
         # set up the PlotCanvas
         self.plotcanvas = self.on_plotcanvas_setup()
         if self.plotcanvas == 'fail':
-            self.splash.finish(self.ui)
             self.log.debug("Failed to start the Canvas.")
 
             self.clear_pool()
             self.log.error("Failed to start the Canvas")
-            raise SystemError("Failed to start the Canvas")
+            raise RuntimeError("Graphics canvas initialization failed")
 
         # add he PlotCanvas setup to the UI
         self.on_plotcanvas_add(self.plotcanvas, self.ui.right_layout)
@@ -968,12 +972,9 @@ class App(QtCore.QObject):
         self.used_time = end_plot_time - start_plot_time
         self.log.debug("Finished Canvas initialization in %s seconds." % str(self.used_time))
 
-        if show_splash:
-            self.splash.showMessage('%s: %ssec' % (_("The application is initializing ...\n"
-                                                     "Canvas initialization started.\n"
-                                                     "Canvas initialization finished in"), '%.2f' % self.used_time),
-                                    alignment=Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignLeft,
-                                    color=QtGui.QColor("lightgray"))
+        self.splash.showMessage(
+            _('Graphics canvas ready in %s seconds.') % ('%.2f' % self.used_time)
+        )
         self.ui.splitter.setStretchFactor(1, 2)
 
         # ###########################################################################################################
@@ -1041,6 +1042,11 @@ class App(QtCore.QObject):
         self.app_plugins = []
 
         # always install tools only after the shell is initialized because the self.inform.emit() depends on shell
+        self.splash.set_stage(
+            'plugins',
+            _('Loading tools and plugins'),
+            _('Connecting editors, tools, and workspace services.')
+        )
         try:
             self.install_tools()
         except AttributeError as e:
@@ -1320,6 +1326,11 @@ class App(QtCore.QObject):
 
         # if the app is not started as headless, show it
         if self.cmd_line_headless != 1:
+            self.splash.set_stage(
+                'ready',
+                _('Workspace ready'),
+                _('FlatCAM finished starting.')
+            )
             if show_splash:
                 # finish the splash
                 self.splash.finish(self.ui)
@@ -1581,6 +1592,10 @@ class App(QtCore.QObject):
     def log_path(self):
         return os.path.join(self.data_path, 'log.txt')
 
+    def report_startup_warning(self, title, detail, suggestion):
+        self.log.warning('%s: %s' % (title, detail))
+        self.splash.add_warning(title=title, detail=detail, suggestion=suggestion)
+
     def on_options_value_changed(self, key_changed):
         # when changing those properties the associated keys change, so we get an updated Properties default Tab
         if key_changed in [
@@ -1748,14 +1763,38 @@ class App(QtCore.QObject):
                               pos=self.ui.menufileimport,
                               separator=True)
 
-        try:
-            self.image_tool = ToolImage(self)
-            self.image_tool.install(icon=QtGui.QIcon(self.resource_location + '/image32.png'),
-                                    pos=self.ui.menufileimport,
-                                    separator=True)
-        except Exception as im_err:
-            self.log.error("Image Import plugin could not be started due of: %s" % str(im_err))
-            self.image_tool = lambda x: None
+        if ToolImage is not None:
+            try:
+                self.image_tool = ToolImage(self)
+                self.image_tool.install(icon=QtGui.QIcon(self.resource_location + '/image32.png'),
+                                        pos=self.ui.menufileimport,
+                                        separator=True)
+            except Exception as im_err:
+                self.log.error("Image Import plugin could not be started due of: %s" % str(im_err))
+                self.image_tool = None
+                self.report_startup_warning(
+                    title=_("Image Import plugin is unavailable"),
+                    detail=str(im_err),
+                    suggestion=_("Restart FlatCAM to retry dependency repair, or rerun the platform setup script.")
+                )
+        else:
+            image_import_error = TOOL_IMAGE_IMPORT_ERROR
+            missing_module = getattr(image_import_error, 'name', None)
+            error_detail = "%s: %s" % (type(image_import_error).__name__, image_import_error)
+            if missing_module:
+                recovery = _(
+                    "Install the missing '%s' package. On Windows, rerun setup_windows.ps1; "
+                    "then follow the Image Import instructions in README.md if the repair fails."
+                ) % missing_module
+            else:
+                recovery = _(
+                    "Rerun the platform setup script, then review the Image Import dependency instructions in README.md."
+                )
+            self.report_startup_warning(
+                title=_("Image Import plugin is unavailable"),
+                detail=error_detail,
+                suggestion=recovery
+            )
 
         self.pcb_wizard_tool = PcbWizard(self)
         self.pcb_wizard_tool.install(icon=QtGui.QIcon(self.resource_location + '/drill32.png'),
@@ -2484,6 +2523,9 @@ class App(QtCore.QObject):
         # This is the object that exit from the Editor. It may be the edited object, but it can be a new object
         # created by the Editor
         edited_obj = self.collection.get_active()
+
+        if edited_obj.kind == 'cncjob' and not self.gcode_editor.has_unsaved_changes():
+            cleanup = True
 
         if cleanup is None:
             msgbox = FCMessageBox(parent=self.ui)

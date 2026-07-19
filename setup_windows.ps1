@@ -82,45 +82,24 @@ if ($LASTEXITCODE -ne 0) { throw "Failed to upgrade pip." }
 
 # ---------------------------------------------------------------------------
 # 4. Install all requirements
-#    GDAL and rasterio are tried last; failure is non-fatal.
 # ---------------------------------------------------------------------------
 
 $reqFile = Join-Path $repoRoot "requirements.txt"
 
-# Strip gdal/rasterio from core install so a failure there does not abort
-$coreLines = (Get-Content $reqFile) | Where-Object { $_ -notmatch "^\s*(gdal|rasterio)\s*$" }
-$tempReqs  = Join-Path $env:TEMP "flatcam_core_reqs.txt"
-$coreLines | Set-Content $tempReqs -Encoding utf8
-
 Write-Host ""
-Write-Host "Installing core dependencies (this may take several minutes) ..." -ForegroundColor Cyan
-& $vPy -m pip install -r $tempReqs
+Write-Host "Installing dependencies (this may take several minutes) ..." -ForegroundColor Cyan
+& $vPy -m pip install -r $reqFile
 $coreOk = ($LASTEXITCODE -eq 0)
-Remove-Item $tempReqs -ErrorAction SilentlyContinue
 
 if (-not $coreOk) {
     Write-Host ""
-    Write-Host "ERROR: Core dependency install failed. See output above." -ForegroundColor Red
+    Write-Host "ERROR: Dependency install failed. See output above." -ForegroundColor Red
     exit 1
 }
 
-# GDAL + rasterio (optional -- only needed for raster/image import)
-Write-Host ""
-Write-Host "Trying GDAL and rasterio (optional) ..." -ForegroundColor Cyan
-$gdalOk = $false
-try {
-    & $vPy -m pip install gdal rasterio
-    if ($LASTEXITCODE -eq 0) { $gdalOk = $true }
-} catch {}
-
-if (-not $gdalOk) {
-    Write-Host ""
-    Write-Host "GDAL/rasterio could not be installed via pip -- this is optional." -ForegroundColor Yellow
-    Write-Host "FlatCAM runs without it (raster image import will be unavailable)." -ForegroundColor Yellow
-    Write-Host "For manual install, get pre-built wheels from:" -ForegroundColor Yellow
-    Write-Host "  https://github.com/cgohlke/geospatial-wheels/releases" -ForegroundColor Yellow
-    Write-Host "Then: .\.venv\Scripts\python.exe -m pip install GDAL-*.whl rasterio-*.whl" -ForegroundColor Yellow
-}
+$requirementsHash = (Get-FileHash -Algorithm SHA256 $reqFile).Hash.ToLowerInvariant()
+$requirementsMarker = Join-Path $venvPath ".flatcam-requirements.sha256"
+[System.IO.File]::WriteAllText($requirementsMarker, $requirementsHash, [System.Text.Encoding]::ASCII)
 
 # ---------------------------------------------------------------------------
 # 5. Quick sanity check
@@ -137,7 +116,8 @@ $checks = @(
     @{ name = "simplejson"; imp = "import simplejson" },
     @{ name = "ezdxf";      imp = "import ezdxf" },
     @{ name = "matplotlib"; imp = "import matplotlib" },
-    @{ name = "rtree";      imp = "import rtree" }
+    @{ name = "rtree";      imp = "import rtree" },
+    @{ name = "rasterio";   imp = "import rasterio; assert rasterio.__gdal_version__" }
 )
 
 $missing = @()
@@ -152,15 +132,36 @@ foreach ($c in $checks) {
 }
 
 # ---------------------------------------------------------------------------
-# 6. Write run_flatcam.bat launcher
+# 6. Write launchers
 # ---------------------------------------------------------------------------
 
 $batPath = Join-Path $repoRoot "run_flatcam.bat"
-$batContent = "@echo off`r`ncd /d `"%~dp0`"`r`n.venv\Scripts\python.exe flatcam.py %*`r`n"
+$batContent = @"
+@echo off
+setlocal
+set "repo=%~dp0"
+set "python=%repo%.venv\Scripts\python.exe"
+
+if not exist "%python%" (
+    echo FlatCAM's virtual environment was not found.
+    echo Run setup_windows.ps1 from the repository first.
+    pause
+    exit /b 1
+)
+
+pushd "%repo%"
+"%python%" "%repo%flatcam.py" %*
+set "exit_code=%errorlevel%"
+popd
+exit /b %exit_code%
+"@
 [System.IO.File]::WriteAllText($batPath, $batContent, [System.Text.Encoding]::ASCII)
 
 Write-Host ""
-Write-Host "Created launcher: run_flatcam.bat" -ForegroundColor Green
+Write-Host "Created terminal launcher: run_flatcam.bat" -ForegroundColor Green
+
+$shortcutScript = Join-Path $repoRoot "create_windows_shortcut.ps1"
+& $shortcutScript
 
 # ---------------------------------------------------------------------------
 # 7. Summary
@@ -180,7 +181,8 @@ if ($missing.Count -gt 0) {
 
 Write-Host ""
 Write-Host "To launch FlatCAM:" -ForegroundColor White
-Write-Host "  Double-click   run_flatcam.bat"
+Write-Host "  Taskbar/desktop  FlatCAM.lnk"
+Write-Host "  Terminal/debug   run_flatcam.bat"
 Write-Host "  -- or from PowerShell --"
 Write-Host "  .\.venv\Scripts\python.exe flatcam.py"
 Write-Host ""

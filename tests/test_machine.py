@@ -371,7 +371,7 @@ def test_load_machine_registry_default_is_adapter():
 
 def test_load_machine_registry_covers_common_preprocessors():
     reg = load_machine_registry()
-    for name in ("default", "GRBL_11", "Marlin"):
+    for name in ("default", "GRBL_11", "Klipper", "Marlin"):
         assert name in reg, f"Expected '{name}' in registry"
 
 

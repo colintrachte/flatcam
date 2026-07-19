@@ -1774,6 +1774,8 @@ class ToolIsolation(AppTool, Gerber):
         for tool_iso in tools_storage:
             for key in tools_storage[tool_iso]:
                 if key == 'data':
+                    for option, value in self.default_data.items():
+                        tools_storage[tool_iso][key].setdefault(option, deepcopy(value))
                     tools_storage[tool_iso][key]["tools_iso_rest"] = use_rest
                     tools_storage[tool_iso][key]["tools_iso_combine_passes"] = use_combine
                     tools_storage[tool_iso][key]["tools_iso_simplification"] = use_simplification
@@ -2983,10 +2985,13 @@ class ToolIsolation(AppTool, Gerber):
         #     self.ui_connect()
         #     return 'fail'
 
+        tool_data = deepcopy(self.default_data)
+        tool_data.update(deepcopy(tool['data']))
+
         self.iso_tools.update({
             tooluid: {
                 'tooldia':          truncated_tooldia,
-                'data':             deepcopy(tool['data']),
+                'data':             tool_data,
                 'solid_geometry':   []
             }
         })

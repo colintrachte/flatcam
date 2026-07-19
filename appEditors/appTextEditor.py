@@ -228,6 +228,24 @@ class AppTextEditor(QtWidgets.QWidget):
             self.code_editor.moveCursor(QtGui.QTextCursor.MoveOperation.End)
         self.code_editor.textChanged.connect(self.handleTextChanged)
 
+    def prepare_for_close(self):
+        """Detach document helpers before the editor widget is destroyed."""
+        try:
+            self.code_editor.textChanged.disconnect(self.handleTextChanged)
+        except (TypeError, RuntimeError):
+            pass
+
+        completer = getattr(self.code_editor, 'completer', None)
+        if completer is not None:
+            completer.popup().hide()
+            completer.setWidget(None)
+
+        highlighter = getattr(self.code_editor, 'highlighter', None)
+        if highlighter is not None:
+            highlighter.setDocument(None)
+
+        self.code_editor.document().clearUndoRedoStacks()
+
     def handleOpen(self, filt=None):
         self.app.defaults.report_usage("handleOpen()")
 
@@ -379,23 +397,26 @@ class AppTextEditor(QtWidgets.QWidget):
 
         old = self.entryFind.get_value()
         new = self.entryReplace.get_value()
+        if not old:
+            return
 
         if self.sel_all_cb.isChecked():
-            while True:
-                cursor = self.code_editor.textCursor()
-                cursor.beginEditBlock()
-                flags = QtGui.QTextDocument.FindFlag.FindCaseSensitively
-                # self.ui.editor is the QPlainTextEdit
-                r = self.code_editor.find(str(old), flags)
-                if r:
-                    qc = self.code_editor.textCursor()
-                    if qc.hasSelection():
-                        qc.insertText(new)
-                else:
-                    self.code_editor.moveCursor(QtGui.QTextCursor.MoveOperation.Start)
-                    break
-            # Mark end of undo block
-            cursor.endEditBlock()
+            cursor = self.code_editor.textCursor()
+            cursor.beginEditBlock()
+            try:
+                while True:
+                    flags = QtGui.QTextDocument.FindFlag.FindCaseSensitively
+                    # self.ui.editor is the QPlainTextEdit
+                    r = self.code_editor.find(str(old), flags)
+                    if r:
+                        qc = self.code_editor.textCursor()
+                        if qc.hasSelection():
+                            qc.insertText(new)
+                    else:
+                        self.code_editor.moveCursor(QtGui.QTextCursor.MoveOperation.Start)
+                        break
+            finally:
+                cursor.endEditBlock()
         else:
             cursor = self.code_editor.textCursor()
             cursor.beginEditBlock()

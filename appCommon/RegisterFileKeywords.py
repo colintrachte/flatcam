@@ -50,7 +50,7 @@ class KeyWords:
         'Berta_CNC', 'Default_no_M6', 'Desktop', 'Documents', 'FlatConfig', 'FlatPrj',
         'False', 'GRBL_11', 'GRL_11_no_M6', 'GRBL_laser', 'grbl_laser_eleks_drd',
         'GRBL_laser_z', 'ISEL_CNC', 'ISEL_ICP_CNC',
-        'Line_xyz', 'Marlin',
+        'Klipper', 'Line_xyz', 'Marlin',
         'Marlin_laser_FAN_pin', 'Marlin_laser_Spindle_pin', 'NCCAD9', 'Marius', 'My Documents',
         'Paste_1', 'Repetier', 'Roland_MDX_20', 'Roland_MDX_540',
         'Toolchange_Manual', 'Toolchange_Probe_MACH3',

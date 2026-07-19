@@ -691,10 +691,16 @@ class AppGCodeEditor(QtCore.QObject):
         """
         my_gcode = self.ui.gcode_editor_tab.code_editor.toPlainText()
         self.gcode_obj.source_file = my_gcode
-        self.deactivate()
 
         self.ui.gcode_editor_tab.buttonSave.setStyleSheet("")
         self.ui.gcode_editor_tab.buttonSave.setIcon(QtGui.QIcon(self.app.resource_location + '/save_as.png'))
+        self.deactivate()
+
+    def has_unsaved_changes(self):
+        """Return whether the editor text differs from the CNC job source."""
+        if self.edit_area is None or self.gcode_obj is None:
+            return False
+        return self.edit_area.toPlainText() != self.gcode_obj.source_file
 
     def on_open_gcode(self):
         """
@@ -725,6 +731,22 @@ class AppGCodeEditor(QtCore.QObject):
         self.app.call_source = 'app'
         self.app.ui.editor_exit_btn_ret_action.setVisible(False)
         self.app.ui.editor_start_btn.setVisible(True)
+        self.close_editor_tab()
+
+    def close_editor_tab(self):
+        """Dispose of the code editor and all document state owned by it."""
+        editor_tab = self.ui.gcode_editor_tab
+        if editor_tab is None:
+            return
+
+        editor_tab.prepare_for_close()
+        tab_index = self.app.ui.plot_tab_area.indexOf(editor_tab)
+        if tab_index >= 0:
+            self.app.ui.plot_tab_area.removeTab(tab_index)
+        editor_tab.deleteLater()
+
+        self.edit_area = None
+        self.ui.gcode_editor_tab = None
 
     def on_name_activate(self):
         self.edited_obj_name = self.ui.name_entry.get_value()

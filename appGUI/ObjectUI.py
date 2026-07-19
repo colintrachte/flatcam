@@ -1240,8 +1240,7 @@ class CNCObjectUI(ObjectUI):
         # Editor
         self.editor_button = FCButton(_('GCode Editor'), bold=True)
         self.editor_button.setIcon(QtGui.QIcon(self.app.resource_location + '/edit_file32.png'))
-
-        self.editor_button.setToolTip(_("Start the Object Editor"))
+        self.editor_button.setToolTip(_("Edit CNC Code."))
         self.custom_box.addWidget(self.editor_button)
 
         # INFO CB
@@ -1449,11 +1448,6 @@ class CNCObjectUI(ObjectUI):
         self.export_gcode_button.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding,
                                                QtWidgets.QSizePolicy.Policy.Minimum)
         g_export_lay.addWidget(self.export_gcode_button)
-
-        self.review_gcode_button = QtWidgets.QToolButton()
-        self.review_gcode_button.setToolTip(_("Review CNC Code."))
-        self.review_gcode_button.setIcon(QtGui.QIcon(self.app.resource_location + '/find32.png'))
-        g_export_lay.addWidget(self.review_gcode_button)
 
         self.custom_box.addStretch(1)
 

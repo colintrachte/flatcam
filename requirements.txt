@@ -7,10 +7,8 @@
 #
 # Install:  pip install -r requirements.txt
 #
-# GDAL and rasterio CANNOT be installed via pip on Windows without GDAL C headers.
-# They are only needed for the Image Import plugin (raster → PCB trace).
-# Windows users: download pre-built wheels from https://github.com/cgohlke/geospatial-wheels
-#   then: pip install GDAL-<ver>-cp312-...-win_amd64.whl rasterio-<ver>-...-win_amd64.whl
+# Rasterio's official wheels bundle the compatible GDAL runtime used by Image Import.
+# FlatCAM does not import the separate osgeo.gdal Python bindings.
 #
 # pyqtdarktheme is NOT listed here because the project bundles a pinned copy in libs/qdarktheme/.
 # Do not pip-install pyqtdarktheme — it will conflict with the bundled version.
@@ -49,9 +47,8 @@ pikepdf>=2.0
 reportlab>=3.5
 
 
-# --- Image import (optional — requires GDAL; see header for Windows instructions) ---
-# gdal
-# rasterio
+# --- Image import ---
+rasterio>=1.4.4
 # svgtrace   # depends on pyppeteer which is abandoned; may not work at runtime
 
 

@@ -146,11 +146,10 @@ class AppPreProcTools(object, metaclass=ABCPreProcRegister):
         pass
 
 
-def load_preprocessors(app):
-    preprocessors_path_search = [
-        os.path.join(app.data_path, 'preprocessors', '*.py'),
-        os.path.join('preprocessors', '*.py')
-    ]
+def load_preprocessors(app, include_user=True):
+    preprocessors_path_search = [os.path.join('preprocessors', '*.py')]
+    if include_user:
+        preprocessors_path_search.insert(0, os.path.join(app.data_path, 'preprocessors', '*.py'))
     import glob
     for path_search in preprocessors_path_search:
         for file in glob.glob(path_search):
@@ -160,4 +159,10 @@ def load_preprocessors(app):
                 spec.loader.exec_module(mod)
             except Exception as e:
                 app.log.error(str(e))
+                if hasattr(app, 'report_startup_warning'):
+                    app.report_startup_warning(
+                        title='Preprocessor could not be loaded: %s' % os.path.basename(file),
+                        detail=str(e),
+                        suggestion='Review or replace the named preprocessor. Core startup can continue.'
+                    )
     return preprocessors

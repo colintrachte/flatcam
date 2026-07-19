@@ -16,7 +16,7 @@ G-code for isolation routing, drilling, milling, cutouts, and more.
 ## What this fork adds
 
 - **`setup_windows.ps1`** — one-shot setup script that creates a Python virtual
-  environment and installs all dependencies. Run it once, then double-click `run_flatcam.bat`.
+  environment, installs dependencies, and creates launchers for terminal and taskbar use.
 - Bug fixes applied on top of upstream (see [TODO.md](TODO.md) for full list):
   - Project save crash when CNC jobs contained `inf`/`nan` float values
   - `FCLabel` startup crash on PyQt6 6.x (`Signal` → `pyqtSignal`)
@@ -60,34 +60,48 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 .\setup_windows.ps1
 
 # Launch FlatCAM
-.\run_flatcam.bat
+Start-Process .\FlatCAM.lnk
 ```
 
 The setup script will:
 1. Create `.venv/` with Python 3.12 (or 3.11 if 3.12 is not found)
 2. Install all packages from `requirements.txt`
-3. Attempt GDAL + rasterio (optional — see below)
+3. Install Rasterio with its compatible bundled GDAL runtime
 4. Verify 8 key imports and report any failures
-5. Write `run_flatcam.bat` for daily use
+5. Write `run_flatcam.bat` for terminal/debug use
+6. Create `FlatCAM.lnk`, a console-free shortcut with the FlatCAM icon
 
-### GDAL / rasterio on Windows
+### Pin FlatCAM to the taskbar
 
-These are only needed for the **Image Import** plugin (converting raster images to
-PCB geometry). All other features work without them.
+After setup, right-click `FlatCAM.lnk` in the repository and choose **Pin to taskbar**.
+The shortcut launches `flatcam.py` with `.venv\Scripts\pythonw.exe`, so it stays tied
+to this checkout and does not open a console window.
 
-If the setup script's automatic install fails, download matching pre-built wheels from
-[cgohlke/geospatial-wheels](https://github.com/cgohlke/geospatial-wheels/releases)
-and install manually:
+If the repository moves, recreate the shortcut from PowerShell:
 
 ```powershell
-.venv\Scripts\python.exe -m pip install GDAL-3.x.x-cp312-...-win_amd64.whl
-.venv\Scripts\python.exe -m pip install rasterio-1.x.x-cp312-...-win_amd64.whl
+.\create_windows_shortcut.ps1
 ```
+
+### Rasterio / GDAL on Windows
+
+Rasterio is needed for the **Image Import** plugin (converting raster images to
+PCB geometry). Its official Windows wheel includes the compatible GDAL runtime,
+so FlatCAM does not install the separate `gdal` Python package. To repair the
+environment manually:
+
+```powershell
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+Source-checkout launches also run this repair automatically when a required
+startup package is missing or `requirements.txt` has changed.
 
 ### Subsequent runs
 
 ```powershell
-.\run_flatcam.bat          # double-click works too
+Start-Process .\FlatCAM.lnk # console-free GUI launch
+.\run_flatcam.bat          # terminal/debug launch
 # or
 .venv\Scripts\python.exe flatcam.py
 ```
@@ -239,7 +253,7 @@ flatcam/
 
 | Feature | Requires | Notes |
 |---|---|---|
-| Image Import (raster → PCB) | GDAL, rasterio, svgtrace | Windows: needs Gohlke wheels |
+| Image Import (raster → PCB) | rasterio (bundled GDAL runtime), svgtrace | Rasterio is installed by setup/startup |
 | PDF Import | pikepdf | Installed by default |
 | QR Code generation | qrcode | Installed by default |
 | Path optimisation (TSP) | ortools | Installed by default; optional |

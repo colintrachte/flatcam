@@ -12,7 +12,6 @@
 
 from PyQt6 import QtCore, QtWidgets
 
-from appEditors.appTextEditor import AppTextEditor
 from appObjects.AppObjectTemplate import FlatCAMObj, ObjectDeleted
 from appGUI.GUIElements import FCFileSaveDialog, FCCheckBox
 from appGUI.ObjectUI import CNCObjectUI
@@ -182,9 +181,6 @@ class CNCJobObject(FlatCAMObj, CNCjob):
             self.text_col = self.app.plotcanvas.new_text_collection()
             self.text_col.enabled = True
             self.annotation = self.app.plotcanvas.new_text_group(collection=self.text_col)
-
-        self.gcode_editor_tab = None
-        self.gcode_viewer_tab = None
 
         self.source_file = ''
         self.units_found = self.app.app_units
@@ -541,11 +537,8 @@ class CNCJobObject(FlatCAMObj, CNCjob):
         # Plot Kind
         self.ui.cncplot_method_combo.activated_custom.connect(self.on_plot_kind_change)
 
-        # Export/REview GCode buttons signals
+        # Export/Edit GCode buttons signals
         self.ui.export_gcode_button.clicked.connect(self.on_exportgcode_button_click)
-        self.ui.review_gcode_button.clicked.connect(self.on_review_code_click)
-
-        # Editor Signal
         self.ui.editor_button.clicked.connect(lambda: self.app.on_editing_start())
 
         # Properties
@@ -772,67 +765,6 @@ class CNCJobObject(FlatCAMObj, CNCjob):
         self.app.file_saved.emit("gcode", filename)
         self.app.inform.emit('[success] %s: %s' % (_("File saved to"), filename))
 
-    def on_review_code_click(self):
-        """
-        Handler activated by a button clicked when reviewing GCode.
-
-        :return:
-        """
-
-        self.app.proc_container.view.set_busy('%s...' % _("Loading"))
-
-        # preamble = self.prepend_snippet
-        # postamble = self.append_snippet
-        #
-        # gco = self.export_gcode(preamble=preamble, postamble=postamble, to_file=True)
-        # if gco == 'fail':
-        #     return
-        # else:
-        #     self.app.gcode_edited = gco
-        self.app.gcode_edited = self.source_file
-
-        self.gcode_editor_tab = AppTextEditor(app=self.app, plain_text=True)
-
-        # add the tab if it was closed
-        self.app.ui.plot_tab_area.addTab(self.gcode_editor_tab, '%s' % _("Code Review"))
-        self.gcode_editor_tab.setObjectName('code_editor_tab')
-
-        # delete the absolute and relative position and messages in the infobar
-        self.app.ui.position_label.setText("")
-        self.app.ui.rel_position_label.setText("")
-
-        self.gcode_editor_tab.code_editor.completer_enable = False
-        self.gcode_editor_tab.buttonRun.hide()
-
-        # Switch plot_area to CNCJob tab
-        self.app.ui.plot_tab_area.setCurrentWidget(self.gcode_editor_tab)
-
-        self.gcode_editor_tab.t_frame.hide()
-        # then append the text from GCode to the text editor
-        try:
-            # self.gcode_editor_tab.load_text(self.app.gcode_edited.getvalue(), move_to_start=True, clear_text=True)
-            self.gcode_editor_tab.load_text(self.app.gcode_edited, move_to_start=True, clear_text=True)
-        except Exception as e:
-            self.app.log.error('FlatCAMCNCJob.on_review_code_click() -->%s' % str(e))
-            return
-
-        self.gcode_editor_tab.t_frame.show()
-        self.app.proc_container.view.set_idle()
-
-        self.gcode_editor_tab.buttonSave.hide()
-        self.gcode_editor_tab.buttonOpen.hide()
-        # self.gcode_editor_tab.buttonPrint.hide()
-        # self.gcode_editor_tab.buttonPreview.hide()
-        self.gcode_editor_tab.buttonReplace.hide()
-        self.gcode_editor_tab.sel_all_cb.hide()
-        self.gcode_editor_tab.entryReplace.hide()
-        self.gcode_editor_tab.code_editor.setReadOnly(True)
-
-        # make sure that the Find entry keeps the focus on the line
-        self.gcode_editor_tab.entryFind.keep_focus = False
-
-        self.app.inform.emit('[success] %s...' % _('Loaded Machine Code into Code Editor'))
-
     def on_update_source_file(self):
         preamble = ''
         postamble = ''
@@ -878,7 +810,7 @@ class CNCJobObject(FlatCAMObj, CNCjob):
                         # for older loaded projects
                         ppg = self.app.options['tools_mill_ppname_g']
 
-                    if 'marlin' in ppg.lower() or 'repetier' in ppg.lower():
+                    if any(name in ppg.lower() for name in ('marlin', 'repetier', 'klipper')):
                         marlin = True
                         break
                     if ppg == 'hpgl':
@@ -894,8 +826,8 @@ class CNCJobObject(FlatCAMObj, CNCjob):
                 pass
 
         try:
-            if 'marlin' in self.obj_options['tools_drill_ppname_e'].lower() or \
-                    'repetier' in self.obj_options['tools_drill_ppname_e'].lower():
+            if any(name in self.obj_options['tools_drill_ppname_e'].lower()
+                   for name in ('marlin', 'repetier', 'klipper')):
                 marlin = True
         except KeyError:
             # self.app.log.debug("FlatCAMCNCJob.gcode_header(): --> There is no such self.option: %s" % str(e))
@@ -915,7 +847,7 @@ class CNCJobObject(FlatCAMObj, CNCjob):
             pass
 
         if marlin is True:
-            gcode += ';Marlin(Repetier) G-code generated by FlatCAM Evo v%s - Version Date:    %s\n' % \
+            gcode += ';Marlin/Repetier/Klipper G-code generated by FlatCAM Evo v%s - Version Date:    %s\n' % \
                      (str(self.app.version), str(self.app.version_date)) + '\n'
 
             gcode += ';Name: ' + str(self.obj_options['name']) + '\n'

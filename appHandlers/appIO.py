@@ -2576,7 +2576,14 @@ class appIO(QtCore.QObject):
         if not run_from_arg or not cli or from_tcl is False:
             msgbox = FCMessageBox(parent=self.app.ui)
             title = _("Import Settings")
-            txt = _("Do you want to import the loaded project settings?")
+            txt = _(
+                "Use the settings saved in this project file?\n\n"
+                "Yes replaces the working settings for this project with the file's saved settings, including units "
+                "and defaults for newly created objects, tools, and CNC jobs. Your saved application preferences are "
+                "not changed.\n\n"
+                "No keeps your current application preferences as the working settings for this project. The "
+                "project's objects and their saved properties are loaded either way."
+            )
             msgbox.setWindowTitle(title)  # taskbar still shows it
             msgbox.setWindowIcon(QtGui.QIcon(self.app.resource_location + '/app128.png'))
             msgbox.setText('<b>%s</b>' % title)
