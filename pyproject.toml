@@ -1,7 +1,48 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v --tb=short"
+addopts = "-v --tb=short --strict-markers --strict-config"
 filterwarnings = [
-    # Swig C-extension builtins from rtree / OR-Tools — not our code
+    # rtree / OR-Tools pull in via importlib with deprecated warnings
     "ignore::DeprecationWarning:importlib",
 ]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+required-version = ">=0.12.0"
+exclude = ["libs", "descartes"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F",    # pycodestyle + pyflakes
+    "I",              # isort
+    "N", "UP",        # pep8-naming, pyupgrade
+    "B", "SIM", "C4", # bugbear, simplify, comprehensions
+    "ARG", "RUF",     # unused args, ruff-specific
+    "A", "PERF",      # builtins shadowing, performance
+    # "PTH",          # uncomment if you want to enforce pathlib
+    # "C90",          # uncomment to enable mccabe
+]
+ignore = [
+    "E501", # line length handled by formatter
+    "W191", # tab indentation handled by formatter
+]
+fixable = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ARG", "S101"] # S101 only matters if you add S
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 120 # remove this + ignore W505 if you don't want doc line length
+
+[tool.ruff.lint.isort]
+known-first-party = ["your_package_name"]
+
+# Only needed if you add C90 above
+# [tool.ruff.lint.mccabe]
+# max-complexity = 12
+
+# Only needed if you add TID above
+# [tool.ruff.lint.flake8-tidy-imports]
+# ban-relative-imports = true
